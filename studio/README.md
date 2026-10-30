@@ -45,7 +45,7 @@ npx wrangler deploy
 `--sample`を省くとサンプルは配信されません。ゲームのソースと素材はエンジンとは別に
 管理します。Picocraftは[専用リポジトリ](https://github.com/ngtyuk/picocraft)で公開しています。
 
-PicoRuby 4.0.5の`RITE0400`形式でROMを生成します。以前の版で作ったROMは、コードから再ビルドしてください。
+PicoRuby 4.0.5の`RITE0400`形式でROMを生成します。
 
 ## 使い方
 
