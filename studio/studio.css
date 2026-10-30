@@ -57,6 +57,7 @@ h2, h3, p { margin: 0; }
 .asset-source { color: var(--muted); margin-left: 7px; }
 .asset-remove { min-width: 28px; min-height: 28px; border: 0; color: var(--red); background: transparent; font-size: 20px; }
 .preview-panel { display: flex; flex-direction: column; }
+.preview-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
 .preview-frame { display: grid; flex: 1; place-items: center; min-height: 480px; padding: 16px; background: #e4e9cc; }
 #runner { width: 100%; max-width: 560px; height: 500px; border: 0; background: var(--paper); }
 .diagnostics { max-width: 1376px; margin: 0 auto 24px; }

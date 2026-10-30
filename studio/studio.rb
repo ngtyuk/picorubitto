@@ -136,7 +136,6 @@ class StudioComponent < GamingComponent
             tag(:button, { "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.openSample(sample['id']) } }) { sample['title'] }
           end
           tag(:input, { "id" => "source-file", "type" => "file", "accept" => ".rb,text/plain", "hidden" => true, onchange: -> { bridge.importSource } })
-          tag(:button, { "id" => "build-run", disabled: state[:ui]["busy"], "class" => "button button-primary", "type" => "button", onclick: -> { build } }) { "実行" }
           tag(:button, { "id" => "download-zip", disabled: state[:ui]["busy"], "class" => "button button-accent", "type" => "button", onclick: -> { download } }) { "SD用ZIP" }
         end
       end
@@ -181,7 +180,10 @@ class StudioComponent < GamingComponent
             tag(:div) do
               tag(:h2) { "ゲーム" }
             end
-            tag(:button, { "id" => "restart-preview", disabled: state[:ui]["busy"], "class" => "button button-quiet", "type" => "button", onclick: -> { restart } }) { "再起動" }
+            tag(:div, { "class" => "preview-actions" }) do
+              tag(:button, { "id" => "build-run", disabled: state[:ui]["busy"], "class" => "button button-primary", "type" => "button", onclick: -> { build } }) { "実行" }
+              tag(:button, { "id" => "restart-preview", disabled: state[:ui]["busy"], "class" => "button button-quiet", "type" => "button", onclick: -> { restart } }) { "再起動" }
+            end
           end
           tag(:div, { "class" => "preview-frame" }) do
             tag(:iframe, { "id" => "runner", "title" => "PicoRubittoエミュレータ", "scrolling" => "no", "src" => "runner.html?boot=1" })
