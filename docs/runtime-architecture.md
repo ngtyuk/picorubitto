@@ -155,7 +155,8 @@ PicoRuby 4.xで旧FatFs gemが削除されたため、SD用Cソースは最後�
   背景のRuby Stringは登録先モジュールが参照を保持し、`set_background(nil)`で解除する。
 - 再生中のSound：所有するRubyオブジェクトが回収されても、IRQの参照がある間は解放を保留する。
   IRQは確保・解放せず、Core 0のフレーム処理・回収処理が音声データを解放する。
-- 標準ライブラリ：ゲームロジックと3Dテスト用に`mruby-math`を含める
+- 標準ライブラリ：ゲームロジックと3Dテスト用に`mruby-math`を含める。`picoruby-rng`の
+  `rand`を実機とWASMで使い、実機はPico SDKの`pico_rand`を乱数源とする。
 - 3D：最大320×240の16-bit深度バッファを確保し、設定した内部解像度で透視投影と三角形・wireframe edgeの
   ラスタライズを行う。ビューポートへの最近傍出力、裏面カリング、頂点変換・投影と内側ループの
   固定小数点化、indexed meshとwireframe edgeをRP2350/WASMで共通に実装する。Core 1 presenter構成では

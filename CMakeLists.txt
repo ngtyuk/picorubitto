@@ -111,6 +111,7 @@ set(MRUBY_INCLUDE "${PICORUBY_BUILD_DIR}/include")
 set(PICORUBY_PLATFORM_SOURCES
   "${PICORUBY_ROOT}/mrbgems/picoruby-mruby/ports/rp2040/custom_ro_data.c"
   "${PICORUBY_ROOT}/mrbgems/picoruby-require/ports/rp2040/platform.c"
+  "${PICORUBY_ROOT}/mrbgems/picoruby-rng/ports/rp2040/rng.c"
 )
 
 add_executable(pico_ruby_gaming
@@ -274,6 +275,7 @@ endif()
 
 target_link_libraries(pico_ruby_gaming PRIVATE
   pico_stdlib
+  pico_rand
   m
   hardware_gpio
   hardware_spi

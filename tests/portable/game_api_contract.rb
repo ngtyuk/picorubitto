@@ -94,6 +94,12 @@ def run_game_api_contract
     Game::ThreeD::Model::MAX_EDGES, Game::ThreeD::Model::MAX_INSTANCES] == [256, 1024, 2048, 128],
     'model limits')
   contract_check(Math.sin(0.0).abs < 0.0001, 'math compatibility')
+  contract_check(rand.is_a?(Integer), 'rand returns an integer')
+  32.times do
+    value = rand(7)
+    contract_check(value.is_a?(Integer) && value >= 0 && value < 7, 'rand integer bounds')
+  end
+  contract_check(rand(1) == 0, 'rand one')
   contract_check(
     Game::Runtime.capability?(Game::Capabilities::DISPLAY | Game::Capabilities::INPUT),
     'combined capability'

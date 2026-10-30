@@ -24,7 +24,7 @@ ruby tools/build/workflow.rb checks
 ## WASM契約テスト
 
 [`tests/portable/game_api_contract.rb`](../tests/portable/game_api_contract.rb)は、API版、
-機能問い合わせ、入力、2D・3D描画、組み込みかな・漢字と文字揃えの呼び出し、アセットの寿命、音声、保存、衝突、時間を検査します。
+機能問い合わせ、`rand`の戻り値と範囲、入力、2D・3D描画、組み込みかな・漢字と文字揃えの呼び出し、アセットの寿命、音声、保存、衝突、時間を検査します。
 組み込み英数字・かな・漢字の実機CとブラウザJavaScriptのデータおよびピクセル一致は
 `python3 tests/native/kana_text_regression.py`で検査します。組み込み字形の再生成には
 [マルミーニャの配布元](https://github.com/hicchicc/x12y12pxMaruMinya)の1.500版TTFと

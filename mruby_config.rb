@@ -73,6 +73,7 @@ MRuby::CrossBuild.new('pico-gaming') do |conf|
   # The game runtime owns storage and cartridge paths in C. Keep the
   # require surface needed by precompiled games without interactive devices.
   conf.gem core: 'picoruby-require'
+  conf.gem core: 'picoruby-rng'
   PicoRubyGaming::RuntimeProfile.add_common_gems(conf, game_root)
   conf.gem gemdir: File.join(game_root, 'mrbgems', 'picoruby-game')
 
