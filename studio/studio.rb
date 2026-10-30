@@ -125,18 +125,16 @@ class StudioComponent < GamingComponent
     tag(:div) do
       tag(:header, { "class" => "topbar" }) do
         tag(:div, { "class" => "brand" }) do
-          brand('../emulator/')
-          tag(:h1) { "Studio" }
+          brand('https://github.com/ngtyuk/picorubitto')
+          tag(:h1) { tag(:a, { "href" => "./" }) { "Studio" } }
         end
         tag(:div, { "class" => "toolbar", "aria-label" => "プロジェクト操作" }) do
           tag(:input, { "id" => "project-name", "class" => "project-name", "value" => "my-game", "aria-label" => "プロジェクト名", oninput: ->(event) { bridge.projectName(event.target[:value].to_s) } })
           tag(:button, { "id" => "new-project", "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.newProject } }) { "新規" }
           tag(:button, { "id" => "import-source", "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.openSource } }) { "開く" }
-          state[:ui]['samples'].each do |sample|
-            tag(:button, { "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.openSample(sample['id']) } }) { sample['title'] }
-          end
+          tag(:button, { "id" => "open-samples", "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.showSamples } }) { "サンプルゲーム" }
           tag(:input, { "id" => "source-file", "type" => "file", "accept" => ".rb,text/plain", "hidden" => true, onchange: -> { bridge.importSource } })
-          tag(:button, { "id" => "download-zip", disabled: state[:ui]["busy"], "class" => "button button-accent", "type" => "button", onclick: -> { download } }) { "SD用ZIP" }
+          tag(:button, { "id" => "download-zip", disabled: state[:ui]["busy"], "class" => "button button-accent", "type" => "button", onclick: -> { download } }) { "書き出す" }
         end
       end
       tag(:main, { "class" => "studio-shell" }) do
@@ -205,6 +203,22 @@ class StudioComponent < GamingComponent
       tag(:footer, { "class" => "footer" }) do
         tag(:a, { "href" => "../docs/hardware.md" }) { "実機であそぶ" }
         tag(:a, { "href" => "../emulator/", "target" => "_blank", "rel" => "noreferrer" }) { "ゲーム一覧" }
+      end
+      tag(:dialog, { "id" => "sample-dialog", "class" => "sample-dialog", "aria-labelledby" => "sample-title" }) do
+        tag(:header, { "class" => "panel-heading" }) do
+          tag(:h2, { "id" => "sample-title" }) { "サンプルゲーム" }
+          tag(:button, { "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.closeSamples } }) { "閉じる" }
+        end
+        tag(:div, { "class" => "sample-body" }) do
+          tag(:p, { "class" => "hint" }) { "選んだゲームのコードと素材を読み込みます。" }
+          if state[:ui]['samples'].empty?
+            tag(:p, { "class" => "hint" }) { "サンプルゲームはありません。" }
+          else
+            state[:ui]['samples'].each do |sample|
+              tag(:button, { "class" => "button sample-item", "type" => "button", onclick: -> { bridge.openSample(sample['id']) } }) { sample['title'] }
+            end
+          end
+        end
       end
       component(PixelEditorComponent)
     end

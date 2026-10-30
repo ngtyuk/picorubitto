@@ -4,6 +4,8 @@ body { min-height: 100vh; }
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 24px 32px; border-bottom: 2px solid var(--line); }
 .brand { display: flex; align-items: center; gap: 24px; }
 .brand h1 { margin: 0; padding-left: 24px; border-left: 2px solid var(--shadow); font-size: 24px; }
+.brand h1 a { color: inherit; text-decoration: none; }
+.brand h1 a:hover { text-decoration: underline; }
 h2, h3, p { margin: 0; }
 .toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
 .project-name { width: 140px; padding: 9px 10px; color: var(--ink); border: 2px solid var(--line); border-radius: 0; background: var(--panel); font-size: 12px; }
@@ -58,6 +60,11 @@ h2, h3, p { margin: 0; }
 .asset-remove { min-width: 28px; min-height: 28px; border: 0; color: var(--red); background: transparent; font-size: 20px; }
 .preview-panel { display: flex; flex-direction: column; }
 .preview-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+.sample-dialog { width: min(440px, calc(100vw - 32px)); padding: 0; border: 2px solid var(--line); background: var(--panel); color: var(--ink); }
+.sample-dialog::backdrop { background: #0008; }
+.sample-body { display: grid; gap: 16px; padding: 20px; }
+.sample-body .hint { margin: 0; }
+.sample-item { width: 100%; text-align: left; }
 .preview-frame { display: grid; flex: 1; place-items: center; min-height: 480px; padding: 16px; background: #e4e9cc; }
 #runner { width: 100%; max-width: 560px; height: 500px; border: 0; background: var(--paper); }
 .diagnostics { max-width: 1376px; margin: 0 auto 24px; }

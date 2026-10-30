@@ -10,7 +10,9 @@ The project includes a game engine, firmware, a browser emulator, and Browser
 Studio for editing Ruby, creating pixel art, and exporting games to a microSD
 card. PicoRuby itself is built from a separate dependency checkout.
 
-Try [PicoRubitto Studio](https://picorubitto.ngt-y.uk/) in your browser.
+## Try PicoRubitto Studio
+
+[Open PicoRubitto Studio](https://picorubitto.ngt-y.uk/) to create and run games in your browser.
 
 - 320×240 RGB565 graphics, sprites, textures, and bitmap fonts
 - Directional buttons, A/B, L/R, and START/SELECT

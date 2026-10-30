@@ -21,6 +21,7 @@ function createStudioBridge() {
   const cursorPosition = document.getElementById('cursor-position');
   const runner = document.getElementById('runner');
   const pixelDialog = document.getElementById('pixel-dialog');
+  const sampleDialog = document.getElementById('sample-dialog');
 
   const state = {
     projectName: 'my-game', assets: new Map(), lastBuild: null, pendingRun: null,
@@ -341,6 +342,8 @@ function createStudioBridge() {
     downloadZip,
     goToLocation,
     openSource() { sourceFile.click(); },
+    showSamples() { if (!sampleDialog.open) sampleDialog.showModal(); },
+    closeSamples() { sampleDialog.close(); },
     async openSample(id) {
       const sample = state.samples.find((item) => item.id === id);
       if (!sample) return;
@@ -359,6 +362,7 @@ function createStudioBridge() {
           name: sample.assets[index], bytes: await response.arrayBuffer(), type: 'application/octet-stream'
         })));
         if (!window.confirm(`現在のコードと素材を${sample.title}で置き換えますか？`)) return;
+        sampleDialog.close();
         applyProject({ projectName: sample.id, source, assets });
         state.lastBuild = null; stopPreview(); scheduleSave();
       } catch (error) {
@@ -400,12 +404,12 @@ function createStudioBridge() {
 
   const forwardedKeys = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'Z', 'Enter', ' ', 'x', 'X', 'q', 'Q', 'e', 'E', 'p', 'P', 'o', 'O']);
   window.addEventListener('keydown', (event) => {
-    if (pixelDialog.open || isTypingTarget(event.target) || !forwardedKeys.has(event.key)) return;
+    if (pixelDialog.open || sampleDialog.open || isTypingTarget(event.target) || !forwardedKeys.has(event.key)) return;
     event.preventDefault();
     runner.contentWindow?.postMessage({ type: 'studio-key', action: 'keydown', key: event.key }, location.origin);
   });
   window.addEventListener('keyup', (event) => {
-    if (pixelDialog.open || isTypingTarget(event.target) || !forwardedKeys.has(event.key)) return;
+    if (pixelDialog.open || sampleDialog.open || isTypingTarget(event.target) || !forwardedKeys.has(event.key)) return;
     event.preventDefault();
     runner.contentWindow?.postMessage({ type: 'studio-key', action: 'keyup', key: event.key }, location.origin);
   });

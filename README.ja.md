@@ -10,7 +10,9 @@
 microSD用ゲーム出力ができるBrowser Studioを含みます。PicoRuby本体は別の依存checkout
 からビルドします。
 
-[PicoRubitto Studio](https://picorubitto.ngt-y.uk/)はブラウザから試せます。
+## PicoRubitto Studioを試す
+
+[PicoRubitto Studioを開く](https://picorubitto.ngt-y.uk/)と、ブラウザでゲームを作って実行できます。
 
 - 320×240・RGB565の画面、スプライト、テクスチャ、ビットマップフォント
 - 十字キー、A/B、L/R、START/SELECT
