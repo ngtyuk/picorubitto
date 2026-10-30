@@ -54,10 +54,10 @@ harness += function('game_display_boot', 'bool')
 harness += function('game_display_error', 'void')
 harness += r'''
 int main(void) {
-  assert(game_boot_screen_remaining_ms(0)==3000);
-  assert(game_boot_screen_remaining_ms(250000)==2750);
-  assert(game_boot_screen_remaining_ms(2999999)==1);
-  assert(game_boot_screen_remaining_ms(3000000)==0);
+  assert(game_boot_screen_remaining_ms(0)==1500);
+  assert(game_boot_screen_remaining_ms(250000)==1250);
+  assert(game_boot_screen_remaining_ms(1499999)==1);
+  assert(game_boot_screen_remaining_ms(1500000)==0);
   assert(game_boot_screen_remaining_ms(5000000)==0);
   uint8_t samples[GAME_BOOT_CHIME_SAMPLES]; game_boot_chime_generate(samples);
   assert(samples[0]==128 && samples[GAME_BOOT_CHIME_SAMPLES-1]==128);

@@ -6,7 +6,7 @@
 /* A short built-in two-note chime; signed waveform around unsigned PCM 128. */
 #define GAME_BOOT_CHIME_RATE 8000u
 #define GAME_BOOT_CHIME_SAMPLES 1600u
-#define GAME_BOOT_SCREEN_MIN_US 3000000u
+#define GAME_BOOT_SCREEN_MIN_US 1500000u
 static inline uint32_t game_boot_screen_remaining_ms(uint32_t elapsed_us)
 {
   if (elapsed_us >= GAME_BOOT_SCREEN_MIN_US) return 0;
