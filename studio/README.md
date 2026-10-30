@@ -1,13 +1,15 @@
-# PicoRuby Gaming Browser Studio
+# PicoRubitto Browser Studio
 
 ブラウザだけで`main.rb`を書き、PicoRubyの`game.mrb`へコンパイルして、同じWASMエミュレータで実行できます。画面はFunicular（PicoRuby）のRubyコンポーネントで描画し、コードのコンパイルはブラウザ内のWeb Workerで処理します。
+
+公開版は[PicoRubitto Studio](https://picorubitto.ngt-y.uk/)から利用できます。
 
 ## 起動
 
 [依存関係を準備](../docs/getting-started.md)してから、エンジンとStudio用コンパイラを生成します。
 
 ```sh
-cd /path/to/picoruby_gaming
+cd /path/to/picorubitto
 source /path/to/emsdk/emsdk_env.sh
 export EM_NODE_JS="$EMSDK_NODE"
 ruby tools/build/workflow.rb studio
@@ -29,7 +31,9 @@ npx wrangler deploy
 ```
 
 配信対象は`build/studio-site/`内の必要なファイルに限られます。`wrangler.jsonc`は
-`game-studio.ngt-y.uk`を指定します。公開にはCloudflareへのログインとドメインの設定が必要です。
+`picorubitto.ngt-y.uk`と従来の`game-studio.ngt-y.uk`を指定します。公開にはCloudflareへの
+ログインとドメインの設定が必要です。ブラウザの保存データはドメインごとに独立するため、
+旧ドメインのプロジェクトは新ドメインに自動では移りません。
 
 PicoRuby 4.0.5の`RITE0400`形式でROMを生成します。以前の版で作ったROMは、コードから再ビルドしてください。
 

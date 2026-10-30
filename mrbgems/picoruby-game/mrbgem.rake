@@ -1,6 +1,6 @@
 MRuby::Gem::Specification.new('picoruby-game') do |spec|
   spec.license = 'MIT'
-  spec.author = 'PicoRuby Gaming'
+  spec.author = 'PicoRubitto'
   spec.summary = 'Native game console API for PicoRuby on RP2350'
 
   spec.cc.include_paths << File.expand_path('../../include', dir)

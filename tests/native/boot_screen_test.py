@@ -47,7 +47,7 @@ static void draw_text(int x,int y,const char *s,uint16_t color) {
 }
 static bool game_display_present(void) { presents++; return true; }
 '''
-assert '"PICORUBY GAMING"' in function('draw_boot_title', 'static void')
+assert '"PICORUBITTO"' in function('draw_boot_title', 'static void')
 assert 'LOADING' not in function('game_display_boot', 'bool')
 harness += function('draw_boot_title', 'static void')
 harness += function('game_display_boot', 'bool')

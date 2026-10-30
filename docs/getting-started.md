@@ -27,7 +27,7 @@ PicoRuby 4.0.5、Funicular 0.5.2、Pico SDK 2.3.1とSD用FatFsを、固定した
 `deps/`はGit管理対象外です。
 
 ```sh
-cd /path/to/picoruby_gaming
+cd /path/to/picorubitto
 ruby tools/build/workflow.rb setup
 ruby tools/build/workflow.rb doctor
 ```
@@ -39,7 +39,7 @@ ruby tools/build/workflow.rb doctor
 ## エンジンをビルドする
 
 ```sh
-cd /path/to/picoruby_gaming
+cd /path/to/picorubitto
 export ARM_TOOLCHAIN=/path/to/arm-none-eabi/bin
 source /path/to/emsdk/emsdk_env.sh
 export EM_NODE_JS="$EMSDK_NODE"

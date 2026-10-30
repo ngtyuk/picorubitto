@@ -47,7 +47,7 @@ end
 ゲームディレクトリに`main.rb`がある場合は、次のコマンドで`game.mrb`を作れます。
 
 ```sh
-cd /path/to/picoruby_gaming
+cd /path/to/picorubitto
 ruby tools/build/workflow.rb game path/to/game
 ```
 

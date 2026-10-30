@@ -1,4 +1,4 @@
-# PicoRuby Gaming
+# PicoRubitto
 
 [English](README.md) | [日本語](README.ja.md)
 
@@ -9,6 +9,8 @@ browser through WebAssembly.
 The project includes a game engine, firmware, a browser emulator, and Browser
 Studio for editing Ruby, creating pixel art, and exporting games to a microSD
 card. PicoRuby itself is built from a separate dependency checkout.
+
+Try [PicoRubitto Studio](https://picorubitto.ngt-y.uk/) in your browser.
 
 - 320×240 RGB565 graphics, sprites, textures, and bitmap fonts
 - Directional buttons, A/B, L/R, and START/SELECT
@@ -69,8 +71,8 @@ this terminal; add it to your shell configuration if you want to keep using it.
 ### 2. Get the repository and pinned dependencies
 
 ```sh
-git clone https://github.com/ngtyuk/picoruby_gaming.git
-cd picoruby_gaming
+git clone https://github.com/ngtyuk/picorubitto.git
+cd picorubitto
 ruby tools/build/workflow.rb setup
 ruby tools/build/workflow.rb doctor
 ```

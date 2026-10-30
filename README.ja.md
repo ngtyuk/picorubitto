@@ -1,4 +1,4 @@
-# PicoRuby Gaming
+# PicoRubitto
 
 [English](README.md) | [日本語](README.ja.md)
 
@@ -9,6 +9,8 @@
 ゲームエンジン、ファームウェア、ブラウザエミュレータに加え、Ruby・ドット絵の編集と
 microSD用ゲーム出力ができるBrowser Studioを含みます。PicoRuby本体は別の依存checkout
 からビルドします。
+
+[PicoRubitto Studio](https://picorubitto.ngt-y.uk/)はブラウザから試せます。
 
 - 320×240・RGB565の画面、スプライト、テクスチャ、ビットマップフォント
 - 十字キー、A/B、L/R、START/SELECT
@@ -68,8 +70,8 @@ Rubyが3.1未満なら、バージョン管理ツールで切り替えるか、
 ### 2. リポジトリと固定した依存関係を取得する
 
 ```sh
-git clone https://github.com/ngtyuk/picoruby_gaming.git
-cd picoruby_gaming
+git clone https://github.com/ngtyuk/picorubitto.git
+cd picorubitto
 ruby tools/build/workflow.rb setup
 ruby tools/build/workflow.rb doctor
 ```

@@ -34,7 +34,7 @@ main(void)
   stdio_init_all();
   /* Give a USB CDC serial monitor time to open before the boot log. */
   sleep_ms(2000);
-  printf("PicoRuby Gaming boot\n");
+  printf("PicoRubitto boot\n");
   printf("PicoRuby %s\n", picorb_version_with_build_info());
   printf("VM: profile=%s scope=picoruby-mruby\n", GAME_VM_PROFILE);
   printf("STACK: core0=%u core1=%u bytes\n",

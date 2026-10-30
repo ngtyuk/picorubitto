@@ -45,7 +45,7 @@
       window.GAME_ROOT = new URL(`${name}/`, root).href;
       window.GAME_ASSET_BASE = new URL(`${assetName}/assets/`, root).href;
       window.GAME_ASSETS = JSON.parse(assets);
-      document.title = `PicoRuby Gaming - ${name}`;
+      document.title = `PicoRubitto - ${name}`;
       await window.GamingWeb.runGame(sources.get(name));
     },
     async example(page) {

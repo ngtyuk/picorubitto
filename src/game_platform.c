@@ -6535,7 +6535,7 @@ game_display_error(const char *title, const char *detail)
 static void
 draw_boot_title(void)
 {
-  const char *title = "PICORUBY GAMING";
+  const char *title = "PICORUBITTO";
   const int scale = 2, advance = 16;
   int x = (GAME_DISPLAY_WIDTH - (int)strlen(title) * advance) / 2;
   int y = (GAME_DISPLAY_HEIGHT - 12 * scale) / 2;

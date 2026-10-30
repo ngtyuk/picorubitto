@@ -1,4 +1,4 @@
-# PicoRuby Gaming エージェント向け開発手順
+# PicoRubitto エージェント向け開発手順
 
 このファイルは、このリポジトリ以下で作業するAIエージェント向けのプロジェクト
 ルールです。人向けの導入手順は[`README.md`](README.md)、詳細な変更・
@@ -25,7 +25,7 @@ APIや機能を変更するときは、実機とWASMの両方を同じ変更で�
 した場合は、完了前にUF2とWASMの両方をビルドする。
 
 ```sh
-cd /path/to/picoruby_gaming
+cd /path/to/picorubitto
 export PICORUBY_ROOT=/path/to/picoruby
 export ARM_TOOLCHAIN=/path/to/arm-none-eabi/bin
 source /path/to/emsdk/emsdk_env.sh

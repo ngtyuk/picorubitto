@@ -3,6 +3,7 @@
   "compatibility_date": "2026-10-30",
   "assets": { "directory": "./build/studio-site" },
   "routes": [
+    { "pattern": "picorubitto.ngt-y.uk", "custom_domain": true },
     { "pattern": "game-studio.ngt-y.uk", "custom_domain": true }
   ]
 }

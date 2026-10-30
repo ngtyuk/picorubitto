@@ -23,7 +23,7 @@ class GamingComponent < Funicular::Component
   def brand(href = 'index.html')
     tag(:a, class: 'brand-link', href: href) do
       tag(:img, class: 'pixel-mark', src: '../web/ruby-mark.svg', alt: '')
-      tag(:span) { 'PicoRuby Gaming' }
+      tag(:span) { 'PicoRubitto' }
     end
   end
 

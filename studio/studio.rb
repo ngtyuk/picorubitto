@@ -180,7 +180,7 @@ class StudioComponent < GamingComponent
             tag(:button, { "id" => "restart-preview", disabled: state[:ui]["busy"], "class" => "button button-quiet", "type" => "button", onclick: -> { restart } }) { "再起動" }
           end
           tag(:div, { "class" => "preview-frame" }) do
-            tag(:iframe, { "id" => "runner", "title" => "PicoRuby Gamingエミュレータ", "scrolling" => "no", "src" => "runner.html?boot=1" })
+            tag(:iframe, { "id" => "runner", "title" => "PicoRubittoエミュレータ", "scrolling" => "no", "src" => "runner.html?boot=1" })
           end
           tag(:div, { "class" => "preview-footer" }) do
             tag(:span, { "id" => "preview-status" }) { state[:ui]["preview"] }
