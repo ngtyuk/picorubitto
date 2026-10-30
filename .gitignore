@@ -1,0 +1,17 @@
+# Project outputs (tools/build/ contains source files).
+/build/
+/dist/
+/deps/
+/local-games/
+*.mrb
+
+# Local caches.
+.DS_Store
+__pycache__/
+*.py[cod]
+
+# Browser compiler outputs. The emulator keeps its rules in emulator/.gitignore.
+/studio/runtime/*
+!/studio/runtime/.gitkeep
+/studio/dist/
+/studio/node_modules/

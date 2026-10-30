@@ -1,0 +1,43 @@
+; Copyright (c) 2020 Raspberry Pi (Trading) Ltd.
+; SPDX-License-Identifier: BSD-3-Clause
+; Adapted from raspberrypi/pico-extras audio_i2s.pio (channel loop order).
+; https://github.com/raspberrypi/pico-extras/blob/master/src/rp2_common/pico_audio_i2s/audio_i2s.pio
+;
+; Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+; following conditions are met:
+;
+; 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+;    disclaimer.
+;
+; 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
+;    disclaimer in the documentation and/or other materials provided with the distribution.
+;
+; 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products
+;    derived from this software without specific prior written permission.
+;
+; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+; INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+; DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+; SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+; SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+; WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+; THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+;
+; Standard I2S: WS changes on the falling edge preceding the channel MSB.
+; One FIFO word contains left[31:16], right[15:0], shifted MSB first.
+; BCLK is side-set bit 0, WS is bit 1. 64 PIO cycles per stereo frame.
+.program game_audio_i2s
+.side_set 2
+.wrap_target
+left_bits:
+    out pins, 1         side 0b00
+    jmp x-- left_bits   side 0b01
+    out pins, 1         side 0b10
+    set x, 14           side 0b11
+right_bits:
+    out pins, 1         side 0b10
+    jmp x-- right_bits  side 0b11
+    out pins, 1         side 0b00
+public entry:
+    set x, 14           side 0b01
+.wrap

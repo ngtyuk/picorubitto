@@ -1,0 +1,54 @@
+.pixel-dialog { width: min(960px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow: auto; padding: 0; border: 3px solid var(--line); color: var(--ink); background: var(--panel); box-shadow: 6px 6px 0 #493b3240; }
+.pixel-dialog::backdrop { background: #493b3266; }
+.pixel-dialog > .panel-heading { position: sticky; top: 0; z-index: 1; background: var(--panel); }
+.pixel-dialog button:disabled { cursor: default; }
+.pixel-body { padding: 20px; }
+.pixel-settings, .pixel-size, .pixel-tools, .pixel-options, .pixel-playback, .pixel-frame-actions, .pixel-footer { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.pixel-settings { justify-content: space-between; margin-bottom: 20px; }
+.pixel-dialog label { font-size: 12px; }
+.pixel-settings label, .pixel-playback label { display: inline-flex; align-items: center; gap: 6px; }
+.pixel-dialog input:not([type="checkbox"]):not([type="file"]) { padding: 7px; border: 2px solid var(--line); border-radius: 0; color: var(--ink); background: var(--panel); font-size: 12px; }
+.pixel-dialog input[type="number"] { width: 58px; }
+#pixel-name { width: 130px; }
+.pixel-workspace { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 24px; }
+.pixel-tools { gap: 8px; }
+.pixel-tools .button { padding: 8px; }
+.pixel-dialog [aria-pressed="true"] { background: var(--sage); }
+.pixel-palette { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin: 18px 0; }
+.pixel-swatch { width: 25px; height: 25px; padding: 0; border: 2px solid var(--line); background: var(--swatch); }
+.pixel-swatch[aria-pressed="true"] { background: var(--swatch); outline: 2px solid var(--ink); outline-offset: 2px; }
+.pixel-color-label { display: flex; align-items: center; gap: 6px; }
+#pixel-color { width: 36px; height: 28px; padding: 1px; }
+.pixel-drawing { display: grid; place-items: center; min-width: 0; min-height: 200px; padding: 10px; border: 2px solid var(--shadow); background: var(--paper); }
+#pixel-canvas { display: block; max-width: 100%; height: auto; image-rendering: pixelated; touch-action: none; cursor: crosshair; }
+.pixel-options { margin-top: 14px; color: var(--muted); }
+.pixel-animation h3 { margin: 0 0 16px; font-size: 14px; }
+#pixel-preview { display: block; width: 128px; height: 128px; border: 2px solid var(--line); object-fit: contain; background: var(--paper); image-rendering: pixelated; }
+.pixel-playback { margin: 18px 0; font-size: 12px; }
+#pixel-position { color: var(--muted); }
+.pixel-frames { display: flex; flex-wrap: wrap; gap: 8px; max-height: 210px; overflow: auto; padding: 4px; }
+.pixel-frame { padding: 3px; border: 2px solid var(--shadow); color: var(--ink); background: var(--panel); font-size: 10px; }
+.pixel-frame[aria-pressed="true"] { border-color: var(--line); }
+.pixel-frame canvas { display: block; width: 48px; height: 48px; margin-bottom: 3px; object-fit: contain; background: var(--paper); image-rendering: pixelated; }
+.pixel-frame-actions { margin-top: 14px; gap: 8px; }
+.pixel-frame-actions .button { padding: 8px; }
+.pixel-code-help { margin-top: 20px; color: var(--muted); font-size: 12px; }
+.pixel-code-help summary { cursor: pointer; }
+.pixel-code-help pre { overflow: auto; padding: 12px; border: 1px solid var(--shadow); color: var(--ink); font: 11px/1.7 var(--mono); white-space: pre; }
+.pixel-status { min-height: 20px; margin-top: 16px; color: var(--green); font-size: 12px; line-height: 1.6; }
+.pixel-status.error { color: var(--red); }
+.pixel-footer { position: sticky; bottom: 0; justify-content: flex-end; padding: 16px 20px; border-top: 2px solid var(--line); background: var(--paper); }
+.pixel-footer .upload-label { margin-right: auto; }
+.asset-actions { display: flex; flex-shrink: 0; align-items: center; gap: 8px; }
+.asset-edit { border: 0; padding: 6px; color: var(--green); background: transparent; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 720px) {
+  .pixel-workspace { grid-template-columns: 1fr; }
+  .pixel-dialog { width: calc(100% - 16px); max-height: calc(100dvh - 16px); }
+  .pixel-body { padding: 14px; }
+  .pixel-settings { gap: 16px; }
+  .pixel-size { gap: 8px; }
+  .pixel-size .button { padding-inline: 8px; }
+  .pixel-footer { padding: 14px; gap: 8px; }
+  .pixel-footer .button { padding-inline: 8px; }
+  .pixel-animation { border-top: 2px solid var(--shadow); padding-top: 20px; }
+}

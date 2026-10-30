@@ -1,0 +1,38 @@
+{
+  "picoruby": {
+    "version": "4.0.5",
+    "url": "https://github.com/picoruby/picoruby.git",
+    "path": "deps/picoruby",
+    "ref": "4.0.5",
+    "revision": "604666ec366bd9c597756e3d671bfa4c378f165d",
+    "submodules": [
+      "mrbgems/picoruby-mruby/lib/mruby",
+      "mrbgems/picoruby-machine/lib/estalloc",
+      "mrbgems/mruby-compiler",
+      "mrbgems/mruby-bin-mrbc",
+      "mrbgems/picoruby-funicular"
+    ],
+    "components": {
+      "Funicular": {
+        "version": "0.5.2",
+        "path": "mrbgems/picoruby-funicular",
+        "revision": "fe7f88700a201e80269a3e54221770b9ca0025f4"
+      }
+    }
+  },
+  "pico-sdk": {
+    "version": "2.3.1",
+    "url": "https://github.com/raspberrypi/pico-sdk.git",
+    "path": "deps/pico-sdk",
+    "ref": "2.3.1",
+    "revision": "079c6f39023649b154152db30f1d781e884879bc",
+    "submodules": ["lib/tinyusb"]
+  },
+  "fatfs": {
+    "version": "R0.14b (PicoRuby final SD port)",
+    "url": "https://github.com/picoruby/picoruby.git",
+    "path": "deps/picoruby-fatfs",
+    "revision": "2eb44257faa86980ee12f40e77573779310433b9",
+    "sparse": ["mrbgems/picoruby-filesystem-fat"]
+  }
+}
