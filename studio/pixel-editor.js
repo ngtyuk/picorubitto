@@ -1,5 +1,12 @@
 (function () {
   'use strict';
+  const t = (ja, en) => window.StudioI18n.t(ja, en);
+  const modelErrors = {
+    'フレーム数は1〜32で指定してください': 'Choose between 1 and 32 frames',
+    '画像のサイズを確認してください': 'Check the image dimensions',
+    '幅と高さは1〜64で指定してください': 'Width and height must be between 1 and 64',
+    '1コマの幅・高さと画像を確認してください': 'Check the frame dimensions and image'
+  };
 
   window.PixelArtEditor = class PixelArtEditor {
     constructor(dialog, { onChange, onApply }) {
@@ -54,7 +61,7 @@
     }
 
     message(text, error = false) {
-      this.status = text;
+      this.status = window.StudioI18n.language === 'en' ? (modelErrors[text] || text) : text;
       this.statusError = error;
       this.publish();
     }
@@ -89,7 +96,7 @@
         selected: this.model.selected, tool: this.tool, color: this.color,
         undo: !!this.model.undoStack.length, redo: !!this.model.redoStack.length,
         playing: this.playing, name: this.validName() ? this.rawName() : 'sprite.raw', fps: this.model.fps,
-        apply: this.rawName() === this.sourceAssetName ? '素材を更新' : '素材に追加',
+        apply: this.rawName() === this.sourceAssetName ? t('素材を更新', 'Update asset') : t('素材に追加', 'Add to assets'),
         message: this.status, error: this.statusError
       }), 0);
     }
@@ -308,14 +315,14 @@
 
     apply() {
       this.finishStroke();
-      if (!this.validName()) { this.message('名前は英数字・ハイフン・アンダースコア・ドットで指定してください', true); return; }
+      if (!this.validName()) { this.message(t('名前は英数字・ハイフン・アンダースコア・ドットで指定してください', 'Use letters, numbers, hyphens, underscores, or dots'), true); return; }
       try {
         const name = this.rawName();
         this.onApply({ name, bytes: this.model.rawSheet(), pixelArt: this.serialize(), sourceAssetName: this.sourceAssetName });
         this.sourceAssetName = name;
         this.onChange();
         this.render();
-        this.message(`${name} を保存しました`);
+        this.message(t(`${name} を保存しました`, `Saved ${name}`));
       } catch (error) { this.message(error.message, true); }
     }
 
@@ -348,7 +355,7 @@
 
     download() {
       this.finishStroke();
-      if (!this.validName()) { this.message('名前は英数字・ハイフン・アンダースコア・ドットで指定してください', true); return; }
+      if (!this.validName()) { this.message(t('名前は英数字・ハイフン・アンダースコア・ドットで指定してください', 'Use letters, numbers, hyphens, underscores, or dots'), true); return; }
       const { width, height, bytes } = this.model.rgbaSheet();
       const filename = this.rawName().replace(/\.raw$/, '.png');
       const canvas = document.createElement('canvas');
@@ -356,14 +363,14 @@
       canvas.height = height;
       canvas.getContext('2d').putImageData(new ImageData(bytes, width, height), 0, 0);
       canvas.toBlob((blob) => {
-        if (!blob) { this.message('PNGの保存を再試行してください', true); return; }
+        if (!blob) { this.message(t('PNGの保存を再試行してください', 'Please try saving the PNG again'), true); return; }
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
         link.download = filename;
         link.click();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
-        this.message('PNGを保存しました');
+        this.message(t('PNGを保存しました', 'PNG saved'));
       }, 'image/png');
     }
   };

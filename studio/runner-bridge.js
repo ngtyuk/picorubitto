@@ -3,6 +3,20 @@
   let pending;
   let running = false;
   const activeUrls = [];
+  function localizeStatus() {
+    if (window.StudioI18n.language !== 'en') return;
+    const statusTranslations = { '準備完了': 'Ready', '音声: 再生中': 'Audio: playing', '音声: 停止': 'Audio: stopped' };
+    const observer = new MutationObserver((changes) => {
+      for (const change of changes) {
+        const element = change.target.nodeType === Node.ELEMENT_NODE ? change.target : change.target.parentElement;
+        if (element && statusTranslations[element.textContent]) element.textContent = statusTranslations[element.textContent];
+      }
+    });
+    for (const id of ['runtime-status', 'audio-status']) {
+      const element = document.getElementById(id);
+      if (element) observer.observe(element, { childList: true, characterData: true, subtree: true });
+    }
+  }
   function send(type, payload = {}) {
     if (parent !== window) parent.postMessage({ type, ...payload }, location.origin);
   }
@@ -10,7 +24,7 @@
     send('studio-runtime-error', { message: error?.message || String(error) });
   }
   window.RunnerBrowser = {
-    ready() { send('studio-ready'); },
+    ready() { localizeStatus(); send('studio-ready'); },
     async launch() {
       const payload = pending;
       pending = null;
@@ -33,7 +47,7 @@
       };
       try {
         await window.GamingWeb.runGame('', payload.mrb);
-        send('studio-status', { message: '実行中' });
+        send('studio-status', { message: window.StudioI18n.t('実行中', 'Running') });
       } catch (error) { window.GameSystemScreen.error('LOAD'); report(error); }
     }
   };
@@ -42,7 +56,7 @@
     const data = event.data || {};
     if (data.type === 'studio-run' && data.mrb && !running) {
       pending = data;
-      window.GamingWeb.emit('runner-state', { running: true, title: data.projectName || 'ゲーム', launch: true });
+      window.GamingWeb.emit('runner-state', { running: true, title: data.projectName || window.StudioI18n.t('ゲーム', 'Game'), launch: true });
     }
     if (data.type === 'studio-key') window.dispatchEvent(new KeyboardEvent(data.action, { key: data.key, bubbles: true }));
   });

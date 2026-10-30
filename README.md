@@ -13,6 +13,7 @@ card. PicoRuby itself is built from a separate dependency checkout.
 ## Try PicoRubitto Studio
 
 [Open PicoRubitto Studio](https://picorubitto.ngt-y.uk/) to create and run games in your browser.
+Studio supports English and Japanese; use the language button to switch.
 
 - 320×240 RGB565 graphics, sprites, textures, and bitmap fonts
 - Directional buttons, A/B, L/R, and START/SELECT

@@ -30,7 +30,7 @@ end
 files = %w[
   studio/index.html studio/runner.html studio/studio.css studio/pixel-editor.css
   studio/runner.css studio/studio.rb studio/pixel-editor.rb studio/runner.rb
-  studio/studio-bridge.js studio/runner-bridge.js studio/compiler-worker.js
+  studio/studio-bridge.js studio/runner-bridge.js studio/compiler-worker.js studio/i18n.js
   studio/pixel-art-model.js studio/pixel-editor.js
   studio/vendor/prism/LICENSE studio/vendor/prism/prism-core.min.js
   studio/vendor/prism/prism-clike.min.js studio/vendor/prism/prism-ruby.min.js

@@ -3,6 +3,8 @@
 ブラウザだけで`main.rb`を書き、PicoRubyの`game.mrb`へコンパイルして、同じWASMエミュレータで実行できます。画面はFunicular（PicoRuby）のRubyコンポーネントで描画し、コードのコンパイルはブラウザ内のWeb Workerで処理します。
 
 公開版は[PicoRubitto Studio](https://picorubitto.ngt-y.uk/)から利用できます。
+画面右上の「English」／「日本語」で表示言語を切り替えられます。初回はブラウザの
+言語設定に応じて選択し、切り替えた設定はブラウザに保存します。
 
 ## 起動
 

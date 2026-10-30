@@ -3,6 +3,12 @@ require 'json'
 
 # Shared Funicular components and browser notifications.
 class GamingComponent < Funicular::Component
+  def translate_ui(ja, en)
+    return ja unless JS.respond_to?(:global)
+    page = JS.global[:GamingWeb][:page].to_s
+    return ja unless page == 'studio' || page == 'runner'
+    JS.global[:StudioI18n][:language].to_s == 'en' ? en : ja
+  end
   def listen(name, &block)
     @subscriptions ||= []
     @subscriptions << JS.document.addEventListener(name) do |event|
@@ -28,7 +34,7 @@ class GamingComponent < Funicular::Component
   end
 
   def controls
-    tag(:section, id: 'controls', class: 'controls', 'aria-label' => 'ゲーム操作') do
+    tag(:section, id: 'controls', class: 'controls', 'aria-label' => translate_ui('ゲーム操作', 'Game controls')) do
       tag(:div, class: 'dpad') do
         [['UP', 'up', '↑'], ['LEFT', 'left', '←'], ['RIGHT', 'right', '→'], ['DOWN', 'down', '↓']].each do |key, css, text|
           tag(:button, 'data-button' => key, class: css) { text }
@@ -48,7 +54,7 @@ class GamingComponent < Funicular::Component
       end
     end
     tag(:label, class: 'audio-dial', for: 'audio-dial') do
-      tag(:span) { '音量ダイヤル' }
+      tag(:span) { translate_ui('音量ダイヤル', 'Volume dial') }
       tag(:input, id: 'audio-dial', type: 'range', min: '0', max: '4095', value: '4095')
     end
   end

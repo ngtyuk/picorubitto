@@ -1,5 +1,6 @@
 // Start the Funicular page before browser services or game tasks touch its DOM.
 const page = document.body.dataset.page;
+const uiText = (ja, en) => window.StudioI18n ? window.StudioI18n.t(ja, en) : ja;
 const runtime = new URL('../emulator/picoruby/picoruby.js', import.meta.url);
 let module;
 let gameActive = false;
@@ -22,7 +23,7 @@ window.GamingWeb = {
     }
     const status = document.getElementById('boot-status');
     status.hidden = false;
-    status.textContent = `起動エラー: ${message}`;
+    status.textContent = uiText(`起動エラー: ${message}`, `Startup error: ${message}`);
     console.error(message);
   },
   async loadScript(src) {
@@ -31,7 +32,7 @@ window.GamingWeb = {
       script.src = this.resource(src);
       if (script.src.includes('/prism-core.')) script.setAttribute('data-manual', '');
       script.onload = resolve;
-      script.onerror = () => reject(new Error(`${src}を読み込めません`));
+      script.onerror = () => reject(new Error(uiText(`${src}を読み込めません`, `Could not load ${src}`)));
       document.body.appendChild(script);
     });
   },
@@ -42,19 +43,19 @@ window.GamingWeb = {
     if (window.GameSystemScreen && window.GameSystemScreen.hasError()) return;
     window.GameEmulator.clear(0);
     const response = await fetch(new URL('../emulator/game_adapter.rb', import.meta.url), { cache: 'no-store' });
-    if (!response.ok) throw new Error('ゲームアダプタを読み込めません');
+    if (!response.ok) throw new Error(uiText('ゲームアダプタを読み込めません', 'Could not load the game adapter'));
     const code = await response.text();
     if (module.ccall('picorb_create_task', 'number', ['string'], [code + '\n' + (source || '')]) !== 0) {
-      throw new Error('ゲームを読み込めません');
+      throw new Error(uiText('ゲームを読み込めません', 'Could not load the game'));
     }
     if (mrb) {
       const bytes = new Uint8Array(mrb);
       const pointer = module._malloc(bytes.length);
-      if (!pointer) throw new Error('ゲーム用メモリを確認してください');
+      if (!pointer) throw new Error(uiText('ゲーム用メモリを確認してください', 'Not enough memory for the game'));
       try {
         module.HEAPU8.set(bytes, pointer);
         const result = module.ccall('picorb_create_task_from_mrb', 'number', ['number', 'number'], [pointer, bytes.length]);
-        if (result !== 0) throw new Error('game.mrbを確認してください');
+        if (result !== 0) throw new Error(uiText('game.mrbを確認してください', 'Check game.mrb'));
       } finally { module._free(pointer); }
     }
   },
@@ -65,7 +66,7 @@ window.GamingWeb = {
 
 try {
   const manifest = await fetch(new URL('../emulator/picoruby/version.json', import.meta.url), { cache: 'no-store' });
-  if (!manifest.ok) throw new Error('workflow.rb studio でWASMを生成してください');
+  if (!manifest.ok) throw new Error(uiText('workflow.rb studio でWASMを生成してください', 'Run workflow.rb studio to build WebAssembly'));
   window.GamingWeb.version = await manifest.json();
   const pageScripts = page === 'studio'
     ? ['vendor/prism/prism-core.min.js', 'vendor/prism/prism-clike.min.js', 'vendor/prism/prism-ruby.min.js',
@@ -77,7 +78,7 @@ try {
     import(window.GamingWeb.resource(runtime.href)),
     Promise.all(scripts.map(async (script) => {
       const response = await fetch(script.src, { cache: 'no-store' });
-      if (!response.ok) throw new Error(`${script.src}を読み込めません`);
+      if (!response.ok) throw new Error(uiText(`${script.src}を読み込めません`, `Could not load ${script.src}`));
       return response.text();
     }))
   ]);
@@ -85,7 +86,7 @@ try {
     locateFile(name) { return window.GamingWeb.resource(new URL(name, runtime).href); }
   });
   window.picorubyModule = module;
-  if (module.ccall('picorb_init', 'number', [], []) !== 0) throw new Error('PicoRubyを初期化できません');
+  if (module.ccall('picorb_init', 'number', [], []) !== 0) throw new Error(uiText('PicoRubyを初期化できません', 'Could not initialize PicoRuby'));
   module.ccall('picorb_create_task', 'number', ['string'], [sources.join('\n')]);
   let lastTick = performance.now();
   function step() {
@@ -103,7 +104,7 @@ try {
         gameActive = false;
       }
       if (status < 0) {
-        window.GamingWeb.reportFailure('PicoRubyのタスクを実行できません');
+        window.GamingWeb.reportFailure(uiText('PicoRubyのタスクを実行できません', 'Could not run the PicoRuby task'));
         return;
       }
       if (status === 0) break;

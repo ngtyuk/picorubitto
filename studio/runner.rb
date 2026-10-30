@@ -1,7 +1,7 @@
 # Preview chrome shares the same Funicular controls as the standalone emulator.
 class RunnerComponent < GamingComponent
   def initialize_state
-    { running: false, title: 'ゲーム', error: '' }
+    { running: false, title: translate_ui('ゲーム', 'Game'), error: '' }
   end
 
   def component_mounted
@@ -17,19 +17,19 @@ class RunnerComponent < GamingComponent
     tag(:main, class: 'shell') do
       tag(:h1, id: 'game-title') { state[:title] }
       tag(:p, id: 'game-description', class: 'description') { state[:error] }
-      tag(:section, id: 'waiting', class: 'waiting', style: state[:running] ? 'display:none' : '') { '実行でスタート' }
+      tag(:section, id: 'waiting', class: 'waiting', style: state[:running] ? 'display:none' : '') { translate_ui('実行でスタート', 'Press Run to start') }
       tag(:div, style: state[:running] ? '' : 'display:none') do
-        tag(:section, id: 'machine', class: 'machine', 'aria-label' => 'ゲーム画面') do
+        tag(:section, id: 'machine', class: 'machine', 'aria-label' => translate_ui('ゲーム画面', 'Game screen')) do
           tag(:canvas, id: 'screen', width: 320, height: 240)
           tag(:div, class: 'status-row') do
-            tag(:span, id: 'runtime-status') { '読み込み中…' }
+            tag(:span, id: 'runtime-status') { translate_ui('読み込み中…', 'Loading…') }
             tag(:span, id: 'fps-status') { '-- fps' }
-            tag(:span, id: 'audio-status') { '音声: 停止' }
+            tag(:span, id: 'audio-status') { translate_ui('音声: 停止', 'Audio: stopped') }
           end
         end
         controls
       end
-      tag(:p, class: 'preview-note') { '矢印 移動 · Z A · X B · Q/E L/R · P/O START/SELECT' }
+      tag(:p, class: 'preview-note') { translate_ui('矢印 移動 · Z A · X B · Q/E L/R · P/O START/SELECT', 'Arrows: move · Z: A · X: B · Q/E: L/R · P/O: START/SELECT') }
     end
   end
 end

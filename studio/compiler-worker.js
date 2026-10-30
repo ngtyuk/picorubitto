@@ -54,12 +54,13 @@ function removeFileIfPresent(fs, path) {
 }
 
 async function compile(request) {
+  const t = (ja, en) => request.language === 'en' ? en : ja;
   const output = { stdout: [], stderr: [] };
   let module = null;
   try {
     module = await getCompiler();
     const fs = module.FS;
-    if (!fs) throw new Error('mrbcの仮想ファイルシステムが利用できません');
+    if (!fs) throw new Error(t('mrbcの仮想ファイルシステムが利用できません', 'The compiler filesystem is unavailable'));
     ensureDirectory(fs, '/studio');
     removeFileIfPresent(fs, '/studio/main.rb');
     removeFileIfPresent(fs, '/studio/game.mrb');
@@ -82,7 +83,7 @@ async function compile(request) {
     activeOutput = null;
     const diagnostics = parseDiagnostics(output.stderr);
     if (exitCode !== 0 && diagnostics.length === 0) {
-      diagnostics.push({ severity: 'error', line: 0, column: 0, message: 'mrbcがコンパイルに失敗しました' });
+      diagnostics.push({ severity: 'error', line: 0, column: 0, message: t('mrbcがコンパイルに失敗しました', 'Compilation failed') });
     }
     if (exitCode !== 0) return { ok: false, diagnostics };
     if (request.mode === 'check') return { ok: true, diagnostics: [] };
@@ -93,7 +94,7 @@ async function compile(request) {
     } catch (error) {
       const files = fs.readdir('/studio').join(', ');
       const details = [...output.stderr, ...output.stdout].join(' | ');
-      throw new Error(`${error.message} (生成ファイル: ${files || 'なし'}${details ? `; ${details}` : ''})`);
+      throw new Error(t(`${error.message} (生成ファイル: ${files || 'なし'}${details ? `; ${details}` : ''})`, `${error.message} (generated files: ${files || 'none'}${details ? `; ${details}` : ''})`));
     }
     const buffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
     return { ok: true, diagnostics: [], mrb: buffer };

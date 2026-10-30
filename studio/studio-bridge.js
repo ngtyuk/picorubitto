@@ -2,6 +2,7 @@
 window.StudioBridge = { start: createStudioBridge };
 
 function createStudioBridge() {
+  const t = (ja, en) => window.StudioI18n.t(ja, en);
 
   const DEFAULT_SOURCE = [
     "require 'game'", '', 'Game.init', '', 'loop do',
@@ -32,9 +33,9 @@ function createStudioBridge() {
   const pixelEditor = new PixelArtEditor(pixelDialog, {
     onChange: scheduleSave,
     onApply({ name, bytes, pixelArt, sourceAssetName }) {
-      if (!safeAssetName(name)) throw new Error('素材の名前を確認してください');
+      if (!safeAssetName(name)) throw new Error(t('素材の名前を確認してください', 'Check the asset name'));
       if (state.assets.has(name) && (name !== sourceAssetName || !state.assets.get(name).pixelArt)) {
-        throw new Error('名前を変えて追加してください');
+        throw new Error(t('名前を変えて追加してください', 'Choose a different name'));
       }
       state.assets.set(name, { name, bytes, sourceName: name,
         type: 'application/octet-stream', pixelArt: { ...pixelArt, sourceAssetName: name } });
@@ -51,7 +52,7 @@ function createStudioBridge() {
     request.resolve(event.data);
   });
   compiler.addEventListener('error', (event) => {
-    const message = event.message || 'コンパイラ起動エラー';
+    const message = event.message || t('コンパイラ起動エラー', 'Could not start the compiler');
     state.pendingRequests.forEach((request) => request.reject(new Error(message)));
     state.pendingRequests.clear();
   });
@@ -122,7 +123,7 @@ function createStudioBridge() {
     return new Promise((resolve, reject) => {
       const id = ++state.requestNumber;
       state.pendingRequests.set(id, { resolve, reject });
-      compiler.postMessage({ id, mode, source });
+      compiler.postMessage({ id, mode, source, language: window.StudioI18n.language });
     });
   }
 
@@ -162,13 +163,13 @@ function createStudioBridge() {
 
   async function addAsset(file) {
     const lowerName = file.name.toLowerCase();
-    if (/\.(ttf|otf)$/i.test(lowerName)) throw new Error(`${file.name}: フォントはPBFで追加してください`);
-    if (!/\.(png|raw|wav|pbf)$/i.test(lowerName)) throw new Error(`${file.name}: PNG / RAW / WAV / PBFを選んでください`);
+    if (/\.(ttf|otf)$/i.test(lowerName)) throw new Error(t(`${file.name}: フォントはPBFで追加してください`, `${file.name}: Use a PBF font`));
+    if (!/\.(png|raw|wav|pbf)$/i.test(lowerName)) throw new Error(t(`${file.name}: PNG / RAW / WAV / PBFを選んでください`, `${file.name}: Choose PNG, RAW, WAV, or PBF`));
     const asset = /\.png$/i.test(lowerName)
       ? await convertPng(file)
       : { bytes: new Uint8Array(await file.arrayBuffer()), name: file.name, sourceName: file.name };
-    if (!safeAssetName(asset.name)) throw new Error(`${file.name}: 名前は英数字・ハイフン・アンダースコア・ドットで指定してください`);
-    if (state.assets.has(asset.name)) throw new Error(`${asset.name}: 同名アセットがあります`);
+    if (!safeAssetName(asset.name)) throw new Error(t(`${file.name}: 名前は英数字・ハイフン・アンダースコア・ドットで指定してください`, `${file.name}: Use letters, numbers, hyphens, underscores, or dots`));
+    if (state.assets.has(asset.name)) throw new Error(t(`${asset.name}: 同名アセットがあります`, `${asset.name}: An asset with this name already exists`));
     state.assets.set(asset.name, {
       ...asset,
       type: lowerName.endsWith('.png') ? 'application/octet-stream' : (file.type || 'application/octet-stream')
@@ -190,14 +191,14 @@ function createStudioBridge() {
       assets: [...state.assets.values()].map((asset) => ({ name: asset.name, type: asset.type, bytes: asset.bytes.slice().buffer }))
     };
     state.pendingRun = payload;
-    setPreviewStatus('起動中…');
-    runner.src = `runner.html?run=${++state.runNumber}`;
+    setPreviewStatus(t('起動中…', 'Starting…'));
+    runner.src = `runner.html?run=${++state.runNumber}&lang=${window.StudioI18n.language}`;
   }
 
   function stopPreview() {
     state.pendingRun = null;
-    runner.src = `runner.html?stopped=${Date.now()}`;
-    setPreviewStatus('停止中');
+    runner.src = `runner.html?stopped=${Date.now()}&lang=${window.StudioI18n.language}`;
+    setPreviewStatus(t('停止中', 'Stopped'));
   }
 
   function crc32(bytes) {
@@ -277,7 +278,7 @@ function createStudioBridge() {
   }
 
   function saveProject() {
-    if (!state.db) { publish({ save: '保存エラー' }); return; }
+    if (!state.db) { publish({ save: t('保存エラー', 'Save failed') }); return Promise.resolve(false); }
     const project = {
       id: 'current', projectName: state.projectName, source: editor.value,
       pixelArt: pixelEditor.serialize(),
@@ -286,7 +287,10 @@ function createStudioBridge() {
     };
     const transaction = state.db.transaction('projects', 'readwrite');
     transaction.objectStore('projects').put(project);
-    transaction.oncomplete = () => { publish({ save: '自動保存' }); };
+    return new Promise((resolve) => {
+      transaction.oncomplete = () => { publish({ save: t('自動保存', 'Saved automatically') }); resolve(true); };
+      transaction.onerror = transaction.onabort = () => { publish({ save: t('保存エラー', 'Save failed') }); resolve(false); };
+    });
   }
 
   function loadProject(db) {
@@ -342,6 +346,14 @@ function createStudioBridge() {
     downloadZip,
     goToLocation,
     openSource() { sourceFile.click(); },
+    async changeLanguage() {
+      clearTimeout(state.saveTimer);
+      if (!await saveProject()) {
+        window.alert(t('プロジェクトを保存できないため、言語を切り替えられません。', 'Could not save the project, so the language was not changed.'));
+        return;
+      }
+      window.StudioI18n.setLanguage(window.StudioI18n.language === 'ja' ? 'en' : 'ja');
+    },
     showSamples() { if (!sampleDialog.open) sampleDialog.showModal(); },
     closeSamples() { sampleDialog.close(); },
     async openSample(id) {
@@ -351,7 +363,7 @@ function createStudioBridge() {
         const base = `samples/${sample.id}/`;
         const get = async (path) => {
           const response = await fetch(window.GamingWeb.resource(base + path));
-          if (!response.ok) throw new Error(`${path}を読み込めません`);
+          if (!response.ok) throw new Error(t(`${path}を読み込めません`, `Could not load ${path}`));
           return response;
         };
         const [sourceResponse, ...assetResponses] = await Promise.all([
@@ -361,7 +373,7 @@ function createStudioBridge() {
         const assets = await Promise.all(assetResponses.map(async (response, index) => ({
           name: sample.assets[index], bytes: await response.arrayBuffer(), type: 'application/octet-stream'
         })));
-        if (!window.confirm(`現在のコードと素材を${sample.title}で置き換えますか？`)) return;
+        if (!window.confirm(t(`現在のコードと素材を${sample.title}で置き換えますか？`, `Replace the current code and assets with ${sample.title}?`))) return;
         sampleDialog.close();
         applyProject({ projectName: sample.id, source, assets });
         state.lastBuild = null; stopPreview(); scheduleSave();
@@ -395,7 +407,7 @@ function createStudioBridge() {
       reportAssets();
     },
     newProject() {
-      if (!window.confirm('現在のコードと素材を新規プロジェクトで置き換えますか？')) return;
+      if (!window.confirm(t('現在のコードと素材を新規プロジェクトで置き換えますか？', 'Replace the current code and assets with a new project?'))) return;
       applyProject({ projectName: 'my-game', source: DEFAULT_SOURCE, assets: [] });
       state.lastBuild = null; stopPreview(); scheduleSave();
     }
@@ -425,7 +437,7 @@ function createStudioBridge() {
     } else if (data.type === 'studio-status') {
       setPreviewStatus(data.message);
     } else if (data.type === 'studio-runtime-error') {
-      setPreviewStatus('実行エラー');
+      setPreviewStatus(t('実行エラー', 'Runtime error'));
       window.GamingWeb.emit('studio-runtime-error', { message: data.message });
     }
   });
@@ -434,7 +446,8 @@ function createStudioBridge() {
     state.db = await openDatabase();
     const saved = await loadProject(state.db);
     applyProject(saved || { projectName: 'my-game', source: DEFAULT_SOURCE, assets: [] });
-    if (!state.db) publish({ save: '保存エラー' });
+    publish({ ready: true });
+    if (!state.db) publish({ save: t('保存エラー', 'Save failed') });
   })();
 
   (async () => {
