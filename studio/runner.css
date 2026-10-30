@@ -14,5 +14,14 @@ h1 { margin: 0; font-size: 14px; text-align: center; }
 .controls { max-width: 340px; margin: 18px auto 16px; }
 .dpad { grid-template-columns: repeat(3, 30px); grid-template-rows: repeat(3, 30px); }
 .dpad button { width: 30px; height: 30px; font-size: 14px; }
+@media (max-width: 340px) {
+  .controls { gap: 4px; }
+  .dpad { grid-template-columns: repeat(3, 26px); grid-template-rows: repeat(3, 26px); }
+  .dpad button { width: 26px; height: 26px; }
+  .system-buttons { gap: 4px; }
+  .system-buttons button { width: 34px; font-size: 9px; }
+  .action-buttons { gap: 4px; }
+  .action-buttons button { width: 34px; height: 34px; }
+}
 .waiting { display: grid; place-items: center; min-height: 300px; margin: 14px 0; border: 2px dashed var(--shadow); color: var(--muted); font-size: 13px; }
 .preview-note { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.6; text-align: center; }

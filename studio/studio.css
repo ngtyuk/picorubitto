@@ -66,7 +66,7 @@ h2, h3, p { margin: 0; }
 .sample-body .hint { margin: 0; }
 .sample-item { width: 100%; text-align: left; }
 .preview-frame { display: grid; flex: 1; place-items: center; min-height: 480px; padding: 16px; background: #e4e9cc; }
-#runner { width: 100%; max-width: 560px; height: 500px; border: 0; background: var(--paper); }
+#runner { width: 100%; max-width: 560px; height: 560px; border: 0; background: var(--paper); }
 .diagnostics { max-width: 1376px; margin: 0 auto 24px; }
 .diagnostics-heading { background: #eee4c9; }
 .diagnostics-list { min-height: 52px; padding: 12px 18px; }
