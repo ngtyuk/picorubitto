@@ -3,6 +3,8 @@
 Web画面は[Funicular](https://github.com/picoruby/funicular)の`Component`とVirtual DOMで
 描画します。Studio、ドット絵ツール、通常エミュレータ、2D・3Dサンプル、APIテスト、
 Studio内プレビューが対象です。HTMLはCSS・スクリプトの読み込みとマウント先だけを持ちます。
+Studioのドキュメント画面もFunicularで構成し、`docs/api-reference.md`を同梱した
+Markedで表示します。本文の正本はMarkdownのまま管理します。
 
 ## 配置と責務
 

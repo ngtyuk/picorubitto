@@ -2,7 +2,8 @@
 
 body { min-height: 100vh; }
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 24px 32px; border-bottom: 2px solid var(--line); }
-.brand { display: flex; align-items: center; gap: 24px; }
+.brand { display: flex; align-items: center; flex-wrap: wrap; gap: 24px; }
+.docs-link { font-size: 12px; font-weight: 700; }
 .brand h1 { margin: 0; padding-left: 24px; border-left: 2px solid var(--shadow); font-size: 24px; }
 .brand h1 a { color: inherit; text-decoration: none; }
 .brand h1 a:hover { text-decoration: underline; }

@@ -1,6 +1,6 @@
 # `Game` APIリファレンス
 
-ゲームから使える、RP2350とWASMに共通のAPIです。APIバージョンは`15`です。
+ゲームから使える、RP2350とWASMに共通のAPIです。APIバージョンは`16`です。
 
 ```ruby
 require 'game'

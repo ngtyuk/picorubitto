@@ -6,7 +6,7 @@ class GamingComponent < Funicular::Component
   def translate_ui(ja, en)
     return ja unless JS.respond_to?(:global)
     page = JS.global[:GamingWeb][:page].to_s
-    return ja unless page == 'studio' || page == 'runner'
+    return ja unless page == 'studio' || page == 'runner' || page == 'docs'
     JS.global[:StudioI18n][:language].to_s == 'en' ? en : ja
   end
   def listen(name, &block)

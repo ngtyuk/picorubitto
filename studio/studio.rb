@@ -127,6 +127,7 @@ class StudioComponent < GamingComponent
         tag(:div, { "class" => "brand" }) do
           brand('https://github.com/ngtyuk/picorubitto')
           tag(:h1) { tag(:a, { "href" => "./" }) { "Studio" } }
+          tag(:a, { "href" => "docs.html", "class" => "docs-link", "target" => "_blank", "rel" => "noopener" }) { translate_ui('ドキュメント', 'Docs') }
         end
         tag(:div, { "class" => "toolbar", "aria-label" => translate_ui('プロジェクト操作', 'Project actions') }) do
           tag(:input, { "id" => "project-name", "class" => "project-name", "value" => "my-game", "aria-label" => translate_ui('プロジェクト名', 'Project name'), oninput: ->(event) { bridge.projectName(event.target[:value].to_s) } })

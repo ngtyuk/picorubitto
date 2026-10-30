@@ -28,12 +28,13 @@ samples = sample_dirs.map do |id, title, path|
 end
 
 files = %w[
-  studio/index.html studio/runner.html studio/studio.css studio/pixel-editor.css
-  studio/runner.css studio/studio.rb studio/pixel-editor.rb studio/runner.rb
+  studio/index.html studio/runner.html studio/docs.html studio/studio.css studio/pixel-editor.css studio/docs.css
+  studio/runner.css studio/studio.rb studio/pixel-editor.rb studio/runner.rb studio/docs.rb studio/docs-bridge.js
   studio/studio-bridge.js studio/runner-bridge.js studio/compiler-worker.js studio/i18n.js
   studio/pixel-art-model.js studio/pixel-editor.js
   studio/vendor/prism/LICENSE studio/vendor/prism/prism-core.min.js
   studio/vendor/prism/prism-clike.min.js studio/vendor/prism/prism-ruby.min.js
+  studio/vendor/marked/marked.umd.js studio/vendor/marked/LICENSE.md docs/api-reference.md
   studio/runtime/mrbc.js studio/runtime/mrbc.wasm studio/runtime/version.json
   web/boot.js web/components.rb web/start.rb web/ruby-mark.svg
   emulator/emulator.js emulator/game_adapter.rb emulator/system-screen.js
