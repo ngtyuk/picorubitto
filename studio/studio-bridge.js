@@ -4,14 +4,10 @@ window.StudioBridge = { start: createStudioBridge };
 function createStudioBridge() {
 
   const DEFAULT_SOURCE = [
-    "require 'game'", '', 'Game.init', 'x = 136', '', 'loop do',
-    "  Game::Display.clear(0xff9b)", "  Game::Display.text(88, 48, 'PICO RUBY', 0x49c6)",
-    "  Game::Display.text(76, 72, 'GAMING STUDIO', 0x4328)",
-    '  Game::Display.fill_rect(x, 140, 48, 24, 0xcb29)',
-    "  Game::Display.text(62, 192, 'LEFT / RIGHT MOVE', 0x49c6)",
-    '  Game::Display.present', '  x -= 2 if Game::Input.pressed?(Game::Input::LEFT)',
-    '  x += 2 if Game::Input.pressed?(Game::Input::RIGHT)', '  x = 0 if x < 0',
-    '  x = 272 if x > 272', '  Game.tick(30)', 'end', ''
+    "require 'game'", '', 'Game.init', '', 'loop do',
+    '  Game::Display.clear(0x0000)',
+    "  Game::Display.text(88, 110, 'Hello, world!', 0xffff)",
+    '  Game::Display.present', '  Game.tick(30)', 'end', ''
   ].join('\n');
 
   const editor = document.getElementById('editor');
