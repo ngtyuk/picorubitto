@@ -25,7 +25,7 @@ function createStudioBridge() {
   const state = {
     projectName: 'my-game', assets: new Map(), lastBuild: null, pendingRun: null,
     runNumber: 0, requestNumber: 0, pendingRequests: new Map(), checkTimer: null,
-    saveTimer: null, db: null, assetErrors: []
+    saveTimer: null, db: null, assetErrors: [], samples: []
   };
 
   const pixelEditor = new PixelArtEditor(pixelDialog, {
@@ -180,7 +180,7 @@ function createStudioBridge() {
     const assets = [...state.assets.values()].sort((a, b) => a.name.localeCompare(b.name)).map((asset) => ({
       name: asset.name, sourceName: asset.sourceName, editable: !!asset.pixelArt
     }));
-    publish({ assets });
+    window.GamingWeb.emit('studio-asset-list', assets);
   }
 
   function launchPreview(bytes) {
@@ -341,6 +341,31 @@ function createStudioBridge() {
     downloadZip,
     goToLocation,
     openSource() { sourceFile.click(); },
+    async openSample(id) {
+      const sample = state.samples.find((item) => item.id === id);
+      if (!sample) return;
+      try {
+        const base = `samples/${sample.id}/`;
+        const get = async (path) => {
+          const response = await fetch(window.GamingWeb.resource(base + path));
+          if (!response.ok) throw new Error(`${path}を読み込めません`);
+          return response;
+        };
+        const [sourceResponse, ...assetResponses] = await Promise.all([
+          get('main.rb'), ...sample.assets.map((name) => get(`assets/${name}`))
+        ]);
+        const source = await sourceResponse.text();
+        const assets = await Promise.all(assetResponses.map(async (response, index) => ({
+          name: sample.assets[index], bytes: await response.arrayBuffer(), type: 'application/octet-stream'
+        })));
+        if (!window.confirm(`現在のコードと素材を${sample.title}で置き換えますか？`)) return;
+        applyProject({ projectName: sample.id, source, assets });
+        state.lastBuild = null; stopPreview(); scheduleSave();
+      } catch (error) {
+        state.assetErrors = [{ severity: 'error', line: 0, column: 0, message: error.message }];
+        reportAssets();
+      }
+    },
     openPixel(name) {
       const asset = state.assets.get(name);
       pixelEditor.open(asset?.pixelArt ? { ...asset.pixelArt, sourceAssetName: name } : null);
@@ -406,6 +431,19 @@ function createStudioBridge() {
     const saved = await loadProject(state.db);
     applyProject(saved || { projectName: 'my-game', source: DEFAULT_SOURCE, assets: [] });
     if (!state.db) publish({ save: '保存エラー' });
+  })();
+
+  (async () => {
+    try {
+      const response = await fetch(window.GamingWeb.resource('samples/manifest.json'));
+      if (!response.ok) return;
+      const samples = await response.json();
+      if (!Array.isArray(samples)) return;
+      state.samples = samples.filter((sample) => sample && /^[a-z0-9-]+$/.test(sample.id) &&
+        typeof sample.title === 'string' && Array.isArray(sample.assets) &&
+        sample.assets.every((name) => safeAssetName(name)));
+      publish({ samples: state.samples.map(({ id, title }) => ({ id, title })) });
+    } catch (error) { console.warn('サンプル一覧を読み込めません', error); }
   })();
 
 }

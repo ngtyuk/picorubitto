@@ -26,7 +26,8 @@ python3 -m http.server 8080 --bind 127.0.0.1
 Cloudflareへの公開用ファイルはビルド後に生成します。
 
 ```sh
-ruby tools/build/package_studio.rb
+git clone https://github.com/ngtyuk/picocraft.git /path/to/picocraft
+ruby tools/build/package_studio.rb --sample 'picocraft,Picocraft,/path/to/picocraft'
 npx wrangler deploy
 ```
 
@@ -34,6 +35,8 @@ npx wrangler deploy
 `picorubitto.ngt-y.uk`と従来の`game-studio.ngt-y.uk`を指定します。公開にはCloudflareへの
 ログインとドメインの設定が必要です。ブラウザの保存データはドメインごとに独立するため、
 旧ドメインのプロジェクトは新ドメインに自動では移りません。
+`--sample`を省くとサンプルは配信されません。ゲームのソースと素材はエンジンではなく
+[Picocraftリポジトリ](https://github.com/ngtyuk/picocraft)で管理します。
 
 PicoRuby 4.0.5の`RITE0400`形式でROMを生成します。以前の版で作ったROMは、コードから再ビルドしてください。
 
@@ -41,6 +44,7 @@ PicoRuby 4.0.5の`RITE0400`形式でROMを生成します。以前の版で作�
 
 1. 左側の`main.rb`にRubyコードを書きます。キーワード・文字列・数値・コメントを色分けして表示します。
    初回は`Hello, world!`を表示するサンプルが入っています。
+   公開版では「Picocraft」を選ぶと、確認後にコードと素材を読み込めます。現在のプロジェクトは置き換わります。
 2. 編集を止めると構文チェックが自動実行されます。エラーの行・列をクリックすると該当位置へ移動できます。
 3. 「実行」を押すと、生成された`game.mrb`を右側の320×240エミュレータで実行します。エミュレータへ渡すのはRubyソースではなく、実機用と同じMRBです。
 4. 必要なら「SD用ZIP」を押して、ゲームと素材をまとめて保存します。

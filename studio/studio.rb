@@ -2,7 +2,7 @@
 class StudioComponent < GamingComponent
   def initialize_state
     { ui: { "build" => "準備中", "preview" => "待機中", "save" => "自動保存",
-            "kind" => "", "busy" => false, "assets" => [], "diagnostics" => [] } }
+            "kind" => "", "busy" => false, "assets" => [], "diagnostics" => [], "samples" => [] } }
   end
 
   def bridge
@@ -13,6 +13,7 @@ class StudioComponent < GamingComponent
     @busy = false
     @asset_errors = []
     listen('studio-state') { |data| update_view(data) }
+    listen('studio-asset-list') { |assets| update_view('assets' => assets) }
     listen('studio-assets') do |errors|
       @asset_errors = errors
       diagnostics(errors, '構文OK')
@@ -131,6 +132,9 @@ class StudioComponent < GamingComponent
           tag(:input, { "id" => "project-name", "class" => "project-name", "value" => "my-game", "aria-label" => "プロジェクト名", oninput: ->(event) { bridge.projectName(event.target[:value].to_s) } })
           tag(:button, { "id" => "new-project", "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.newProject } }) { "新規" }
           tag(:button, { "id" => "import-source", "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.openSource } }) { "開く" }
+          state[:ui]['samples'].each do |sample|
+            tag(:button, { "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.openSample(sample['id']) } }) { sample['title'] }
+          end
           tag(:input, { "id" => "source-file", "type" => "file", "accept" => ".rb,text/plain", "hidden" => true, onchange: -> { bridge.importSource } })
           tag(:button, { "id" => "build-run", disabled: state[:ui]["busy"], "class" => "button button-primary", "type" => "button", onclick: -> { build } }) { "実行" }
           tag(:button, { "id" => "download-zip", disabled: state[:ui]["busy"], "class" => "button button-accent", "type" => "button", onclick: -> { download } }) { "SD用ZIP" }
