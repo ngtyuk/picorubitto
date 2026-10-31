@@ -8,6 +8,7 @@
 | [プロジェクト概要・初回セットアップ（日本語）](../README.ja.md) | 英語版READMEと同じセットアップ手順 |
 | [セットアップ](getting-started.md) | 依存関係、ボード別ビルド、ブラウザでの初回起動 |
 | [実機ガイド](hardware.md) | GPIO配線、UF2書き込み、SDカードからの起動 |
+| [WeAct親基板の配置案](hardware-layout.md) | 画面・操作部・裏面部品の概略配置と詳細設計前の確認 |
 | [ゲーム作成](game-development.md) | ディレクトリ、最小コード、アセット変換、ROM生成 |
 | [APIリファレンス](api-reference.md) | `Game` APIの引数・戻り値・形式 |
 | [サンプル一覧](../examples/README.md) | 2D・3Dサンプルの操作とROM生成 |

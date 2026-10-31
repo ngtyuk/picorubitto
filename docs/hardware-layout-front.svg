@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="178mm" height="120mm" viewBox="0 25 178 120" role="img" aria-labelledby="title desc">
+<title id="title">PicoRubitto WeAct 親基板 配置案 A</title>
+<desc id="desc">150×90mmの横持ち型。表面は中央の62×37.5mm画面、左の十字キー、右のA/B。裏面はWeAct、音声、電源と電池ホルダーの仮領域。製造用配線図ではない。</desc>
+<rect width="356" height="222" fill="#fbfaf7"/>
+<g font-family="Hiragino Sans, Noto Sans CJK JP, sans-serif">
+<text x="12" y="9" font-size="6" fill="#203b36" text-anchor="start" dominant-baseline="hanging">PicoRubitto</text>
+<text x="12" y="18" font-size="3.7" fill="#203b36" text-anchor="start" dominant-baseline="hanging">WeAct 親基板 / 配置案 A</text>
+<text x="344" y="11" font-size="5" fill="#203b36" text-anchor="end" dominant-baseline="hanging">150 × 90 mm</text>
+<text x="344" y="20" font-size="3" fill="#63736c" text-anchor="end" dominant-baseline="hanging">2026-10-31 · 概略配置 / 未配線</text>
+<text x="12" y="29" font-size="4" fill="#203b36" text-anchor="start" dominant-baseline="hanging">表面 — 操作する側</text>
+<text x="12" y="35" font-size="2.5" fill="#63736c" text-anchor="start" dominant-baseline="hanging">画面・ボタン・スピーカー</text>
+<rect x="12" y="43" width="150" height="90" rx="5" fill="#e3eee7" stroke="#597b67" stroke-width="0.5"/>
+<circle cx="17" cy="48" r="1.5" fill="#fbfaf7" stroke="#597b67" stroke-width="0.3"/>
+<circle cx="157" cy="48" r="1.5" fill="#fbfaf7" stroke="#597b67" stroke-width="0.3"/>
+<circle cx="17" cy="128" r="1.5" fill="#fbfaf7" stroke="#597b67" stroke-width="0.3"/>
+<circle cx="157" cy="128" r="1.5" fill="#fbfaf7" stroke="#597b67" stroke-width="0.3"/>
+<line x1="12" y1="141" x2="162" y2="141" stroke="#63736c" stroke-width="0.2"/>
+<line x1="12" y1="140" x2="12" y2="142" stroke="#63736c" stroke-width="0.2"/>
+<line x1="162" y1="140" x2="162" y2="142" stroke="#63736c" stroke-width="0.2"/>
+<text x="87.0" y="136" font-size="2.7" fill="#63736c" text-anchor="middle" dominant-baseline="hanging">150 mm</text>
+<text x="190" y="29" font-size="4" fill="#203b36" text-anchor="start" dominant-baseline="hanging">裏面部品 — 表側からの透視</text>
+<text x="190" y="35" font-size="2.5" fill="#63736c" text-anchor="start" dominant-baseline="hanging">左右は表面と共通。実際の裏返し図ではありません</text>
+<rect x="190" y="43" width="150" height="90" rx="5" fill="#e3eee7" stroke="#597b67" stroke-width="0.5"/>
+<circle cx="195" cy="48" r="1.5" fill="#fbfaf7" stroke="#597b67" stroke-width="0.3"/>
+<circle cx="335" cy="48" r="1.5" fill="#fbfaf7" stroke="#597b67" stroke-width="0.3"/>
+<circle cx="195" cy="128" r="1.5" fill="#fbfaf7" stroke="#597b67" stroke-width="0.3"/>
+<circle cx="335" cy="128" r="1.5" fill="#fbfaf7" stroke="#597b67" stroke-width="0.3"/>
+<line x1="190" y1="141" x2="340" y2="141" stroke="#63736c" stroke-width="0.2"/>
+<line x1="190" y1="140" x2="190" y2="142" stroke="#63736c" stroke-width="0.2"/>
+<line x1="340" y1="140" x2="340" y2="142" stroke="#63736c" stroke-width="0.2"/>
+<text x="265.0" y="136" font-size="2.7" fill="#63736c" text-anchor="middle" dominant-baseline="hanging">150 mm</text>
+<rect x="21" y="44" width="18" height="7" rx="1" fill="#d8e2d9" stroke="#597b67" stroke-width="0.3"/>
+<text x="30" y="45" font-size="3.5" fill="#203b36" text-anchor="middle" dominant-baseline="hanging">L</text>
+<rect x="135" y="44" width="18" height="7" rx="1" fill="#d8e2d9" stroke="#597b67" stroke-width="0.3"/>
+<text x="144" y="45" font-size="3.5" fill="#203b36" text-anchor="middle" dominant-baseline="hanging">R</text>
+<rect x="47" y="44" width="12" height="5" rx="0.7" fill="#f6f8f5" stroke="#597b67" stroke-width="0.3"/>
+<text x="53" y="51" font-size="2.4" fill="#63736c" text-anchor="middle" dominant-baseline="hanging">電源</text>
+<rect x="116" y="44" width="11" height="6" rx="0.7" fill="#f6f8f5" stroke="#597b67" stroke-width="0.3"/>
+<text x="121.5" y="51" font-size="2.4" fill="#63736c" text-anchor="middle" dominant-baseline="hanging">音量</text>
+<rect x="56" y="62" width="62" height="37.5" rx="0.5" fill="#2d443e" stroke="#203b36" stroke-width="0.3"/>
+<rect x="66.6" y="65.45" width="40.8" height="30.6" rx="0" fill="#d5d9c2" stroke="#d5d9c2" stroke-width="0.3"/>
+<text x="87" y="73" font-size="3.6" fill="#203b36" text-anchor="middle" dominant-baseline="hanging">PicoRubitto</text>
+<text x="87" y="79.7" font-size="2.8" fill="#203b36" text-anchor="middle" dominant-baseline="hanging">320 × 240</text>
+<text x="87" y="86" font-size="2.5" fill="#63736c" text-anchor="middle" dominant-baseline="hanging">2.0 inch</text>
+<circle cx="58" cy="66.45" r="1.3" fill="#fbfaf7" stroke="#b6c4bb" stroke-width="0.3"/>
+<circle cx="116" cy="66.45" r="1.3" fill="#fbfaf7" stroke="#b6c4bb" stroke-width="0.3"/>
+<circle cx="58" cy="95.05" r="1.3" fill="#fbfaf7" stroke="#b6c4bb" stroke-width="0.3"/>
+<circle cx="116" cy="95.05" r="1.3" fill="#fbfaf7" stroke="#b6c4bb" stroke-width="0.3"/>
+<circle cx="58.7" cy="73.0" r="0.5" fill="#d4b77d" stroke="#d4b77d" stroke-width="0.1"/>
+<circle cx="58.7" cy="75.54" r="0.5" fill="#d4b77d" stroke="#d4b77d" stroke-width="0.1"/>
+<circle cx="58.7" cy="78.08" r="0.5" fill="#d4b77d" stroke="#d4b77d" stroke-width="0.1"/>
+<circle cx="58.7" cy="80.62" r="0.5" fill="#d4b77d" stroke="#d4b77d" stroke-width="0.1"/>
+<circle cx="58.7" cy="83.16" r="0.5" fill="#d4b77d" stroke="#d4b77d" stroke-width="0.1"/>
+<circle cx="58.7" cy="85.7" r="0.5" fill="#d4b77d" stroke="#d4b77d" stroke-width="0.1"/>
+<circle cx="58.7" cy="88.24" r="0.5" fill="#d4b77d" stroke="#d4b77d" stroke-width="0.1"/>
+<text x="87" y="102" font-size="2.7" fill="#63736c" text-anchor="middle" dominant-baseline="hanging">GMT020-02 · 62 × 37.5 mm</text>
+<rect x="31" y="68" width="8" height="8" rx="1" fill="#f6f8f5" stroke="#597b67" stroke-width="0.3"/>
+<text x="35" y="69.9" font-size="3.5" fill="#203b36" text-anchor="middle" dominant-baseline="hanging">↑</text>
+<rect x="20" y="79" width="8" height="8" rx="1" fill="#f6f8f5" stroke="#597b67" stroke-width="0.3"/>
+<text x="24" y="80.9" font-size="3.5" fill="#203b36" text-anchor="middle" dominant-baseline="hanging">←</text>
+<rect x="42" y="79" width="8" height="8" rx="1" fill="#f6f8f5" stroke="#597b67" stroke-width="0.3"/>
+<text x="46" y="80.9" font-size="3.5" fill="#203b36" text-anchor="middle" dominant-baseline="hanging">→</text>
+<rect x="31" y="90" width="8" height="8" rx="1" fill="#f6f8f5" stroke="#597b67" stroke-width="0.3"/>
+<text x="35" y="91.9" font-size="3.5" fill="#203b36" text-anchor="middle" dominant-baseline="hanging">↓</text>
+<circle cx="35" cy="83" r="3.5" fill="#c2d3c5" stroke="#597b67" stroke-width="0.3"/>
+<circle cx="141" cy="75" r="6" fill="#f0d5c7" stroke="#a56752" stroke-width="0.3"/>
+<text x="141" y="72.6" font-size="4.3" fill="#203b36" text-anchor="middle" dominant-baseline="hanging">A</text>
+<circle cx="130" cy="91" r="6" fill="#f0d5c7" stroke="#a56752" stroke-width="0.3"/>
+<text x="130" y="88.6" font-size="4.3" fill="#203b36" text-anchor="middle" dominant-baseline="hanging">B</text>
+<rect x="69" y="113" width="10" height="4" rx="1.7" fill="#f6f8f5" stroke="#597b67" stroke-width="0.3"/>
+<text x="74" y="120" font-size="2.5" fill="#63736c" text-anchor="middle" dominant-baseline="hanging">SELECT</text>
+<rect x="91" y="113" width="10" height="4" rx="1.7" fill="#f6f8f5" stroke="#597b67" stroke-width="0.3"/>
+<text x="96" y="120" font-size="2.5" fill="#63736c" text-anchor="middle" dominant-baseline="hanging">START</text>
+<circle cx="26" cy="116" r="1.6" fill="#ccad56" stroke="#ac7735" stroke-width="0.3"/>
+<text x="26" y="121" font-size="2.3" fill="#63736c" text-anchor="middle" dominant-baseline="hanging">電池LED</text>
+<circle cx="144" cy="116" r="10" fill="#d8e2d9" stroke="#597b67" stroke-width="0.3"/>
+<line x1="138" y1="112" x2="150" y2="112" stroke="#597b67" stroke-width="0.5"/>
+<line x1="138" y1="116" x2="150" y2="116" stroke="#597b67" stroke-width="0.5"/>
+<line x1="138" y1="120" x2="150" y2="120" stroke="#597b67" stroke-width="0.5"/>
+<text x="144" y="128" font-size="2.4" fill="#63736c" text-anchor="middle" dominant-baseline="hanging">スピーカー</text>
+<line x1="56" y1="59" x2="118" y2="59" stroke="#63736c" stroke-width="0.2"/>
+<line x1="56" y1="58" x2="56" y2="60" stroke="#63736c" stroke-width="0.2"/>
+<line x1="118" y1="58" x2="118" y2="60" stroke="#63736c" stroke-width="0.2"/>
+<text x="87.0" y="54" font-size="2.7" fill="#63736c" text-anchor="middle" dominant-baseline="hanging">62 mm</text>
+<line x1="166" y1="43" x2="166" y2="133" stroke="#63736c" stroke-width="0.2"/>
+<line x1="165" y1="43" x2="167" y2="43" stroke="#63736c" stroke-width="0.2"/>
+<line x1="165" y1="133" x2="167" y2="133" stroke="#63736c" stroke-width="0.2"/>
+<text x="168" y="88.0" font-size="2.7" fill="#63736c" text-anchor="start" dominant-baseline="hanging">90</text>
+<rect x="244" y="43" width="42" height="42" rx="1" fill="#fbf1dc" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="244" y1="43" x2="286" y2="43" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="286" y1="43" x2="286" y2="85" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="286" y1="85" x2="244" y2="85" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="244" y1="85" x2="244" y2="43" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<text x="265.0" y="61.0" font-size="3" fill="#203b36" text-anchor="middle" dominant-baseline="hanging">WeAct RP2350B</text>
+<text x="265.0" y="66.2" font-size="2.3" fill="#63736c" text-anchor="middle" dominant-baseline="hanging">42 × 42 mm 仮確保</text>
+<rect x="260" y="42" width="10" height="5" rx="0.5" fill="#d7dce0" stroke="#597b67" stroke-width="0.3"/>
+<text x="265" y="49" font-size="2.8" fill="#203b36" text-anchor="middle" dominant-baseline="hanging">USB-C ↑</text>
+<text x="265" y="77" font-size="2.4" fill="#63736c" text-anchor="middle" dominant-baseline="hanging">BOOT / RESETへのアクセス</text>
+<rect x="198" y="52" width="36" height="17" rx="1" fill="#fbf1dc" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="198" y1="52" x2="234" y2="52" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="234" y1="52" x2="234" y2="69" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="234" y1="69" x2="198" y2="69" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="198" y1="69" x2="198" y2="52" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<text x="216.0" y="57.5" font-size="3" fill="#203b36" text-anchor="middle" dominant-baseline="hanging">昇圧モジュール</text>
+<text x="216.0" y="62.7" font-size="2.3" fill="#63736c" text-anchor="middle" dominant-baseline="hanging">外形・取付方法は未確定</text>
+<rect x="295" y="52" width="34" height="15" rx="1" fill="#fbf1dc" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="295" y1="52" x2="329" y2="52" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="329" y1="52" x2="329" y2="67" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="329" y1="67" x2="295" y2="67" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="295" y1="67" x2="295" y2="52" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<text x="312.0" y="56.5" font-size="3" fill="#203b36" text-anchor="middle" dominant-baseline="hanging">音量ダイヤル</text>
+<text x="312.0" y="61.7" font-size="2.3" fill="#63736c" text-anchor="middle" dominant-baseline="hanging">上端から操作</text>
+<rect x="190" y="108" width="22" height="18" rx="1" fill="#fbf1dc" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="190" y1="108" x2="212" y2="108" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="212" y1="108" x2="212" y2="126" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="212" y1="126" x2="190" y2="126" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="190" y1="126" x2="190" y2="108" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<text x="201.0" y="114.0" font-size="3" fill="#203b36" text-anchor="middle" dominant-baseline="hanging">microSD</text>
+<text x="201.0" y="119.2" font-size="2.3" fill="#63736c" text-anchor="middle" dominant-baseline="hanging">← 左側から交換</text>
+<rect x="226" y="100" width="62" height="32" rx="1" fill="#fbf1dc" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="226" y1="100" x2="288" y2="100" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="288" y1="100" x2="288" y2="132" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="288" y1="132" x2="226" y2="132" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="226" y1="132" x2="226" y2="100" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<text x="257.0" y="113.0" font-size="3" fill="#203b36" text-anchor="middle" dominant-baseline="hanging">単3 × 2 ホルダー</text>
+<text x="257.0" y="118.2" font-size="2.3" fill="#63736c" text-anchor="middle" dominant-baseline="hanging">ケースに浮かせて固定・仮寸法</text>
+<rect x="292" y="104" width="20" height="20" rx="1" fill="#fbf1dc" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="292" y1="104" x2="312" y2="104" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="312" y1="104" x2="312" y2="124" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="312" y1="124" x2="292" y2="124" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<line x1="292" y1="124" x2="292" y2="104" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<text x="302.0" y="111.0" font-size="3" fill="#203b36" text-anchor="middle" dominant-baseline="hanging">I2Sアンプ</text>
+<text x="302.0" y="116.2" font-size="2.3" fill="#63736c" text-anchor="middle" dominant-baseline="hanging">MAX98357A</text>
+<circle cx="324" cy="115" r="10" fill="#e6ece4" stroke="#597b67" stroke-width="0.3"/>
+<text x="324" y="112" font-size="3" fill="#203b36" text-anchor="middle" dominant-baseline="hanging">SPK</text>
+<circle cx="236" cy="66.45" r="2.7" fill="#e3eee7" stroke="#597b67" stroke-width="0.2"/>
+<circle cx="236" cy="66.45" r="1.3" fill="#fbfaf7" stroke="#597b67" stroke-width="0.2"/>
+<circle cx="294" cy="66.45" r="2.7" fill="#e3eee7" stroke="#597b67" stroke-width="0.2"/>
+<circle cx="294" cy="66.45" r="1.3" fill="#fbfaf7" stroke="#597b67" stroke-width="0.2"/>
+<circle cx="236" cy="95.05" r="2.7" fill="#e3eee7" stroke="#597b67" stroke-width="0.2"/>
+<circle cx="236" cy="95.05" r="1.3" fill="#fbfaf7" stroke="#597b67" stroke-width="0.2"/>
+<circle cx="294" cy="95.05" r="2.7" fill="#e3eee7" stroke="#597b67" stroke-width="0.2"/>
+<circle cx="294" cy="95.05" r="1.3" fill="#fbfaf7" stroke="#597b67" stroke-width="0.2"/>
+<text x="265" y="90" font-size="2.5" fill="#63736c" text-anchor="middle" dominant-baseline="hanging">画面の4取付穴と固定部の逃げを確保</text>
+<line x1="292" y1="113" x2="287" y2="83" stroke="#ac7735" stroke-width="0.3" stroke-dasharray=".85 .75"/>
+<text x="12" y="152" font-size="3.7" fill="#203b36" text-anchor="start" dominant-baseline="hanging">採用済みの情報</text>
+<text x="12" y="160" font-size="2.8" fill="#203b36" text-anchor="start" dominant-baseline="hanging">画面：62 × 37.5 mm / 穴間隔 58 × 28.6 mm</text>
+<text x="12" y="166" font-size="2.8" fill="#203b36" text-anchor="start" dominant-baseline="hanging">画面穴：φ2.6 mm / 7ピン：2.54 mmピッチ</text>
+<text x="12" y="172" font-size="2.8" fill="#203b36" text-anchor="start" dominant-baseline="hanging">画面側の穴中心：左端・上端から (2, 4.45) mm</text>
+<text x="12" y="178" font-size="2.7" fill="#63736c" text-anchor="start" dominant-baseline="hanging">画面の図面値は、発注前に現物と照合します。</text>
+<text x="190" y="152" font-size="3.7" fill="#203b36" text-anchor="start" dominant-baseline="hanging">この配置で確かめること</text>
+<text x="190" y="160" font-size="2.8" fill="#203b36" text-anchor="start" dominant-baseline="hanging">USB・SD・電源・音量はケース外から操作</text>
+<text x="190" y="166" font-size="2.8" fill="#203b36" text-anchor="start" dominant-baseline="hanging">画面とWeActのソケット・はんだ部の高さを確認</text>
+<text x="190" y="172" font-size="2.8" fill="#203b36" text-anchor="start" dominant-baseline="hanging">電池ホルダーはボタン裏の端子を避けて浮かせる</text>
+<text x="190" y="178" font-size="2.7" fill="#63736c" text-anchor="start" dominant-baseline="hanging">点線の領域は部品選定後に寸法を置き換え</text>
+<line x1="12" y1="190" x2="344" y2="190" stroke="#cfd8ce" stroke-width="0.25"/>
+<text x="12" y="196" font-size="2.8" fill="#63736c" text-anchor="start" dominant-baseline="hanging">位置と持ちやすさを検討する案です。端子の絶対位置・部品形状・高さ・電源回路は、詳細設計で確定します。</text>
+<text x="12" y="203" font-size="2.8" fill="#63736c" text-anchor="start" dominant-baseline="hanging">製造用の基板データではありません。外形・ボタン位置・ケース固定穴は変更できます。</text>
+<line x1="12" y1="215" x2="32" y2="215" stroke="#203b36" stroke-width="0.5"/>
+<line x1="12" y1="214" x2="12" y2="216" stroke="#203b36" stroke-width="0.3"/>
+<line x1="32" y1="214" x2="32" y2="216" stroke="#203b36" stroke-width="0.3"/>
+<text x="36" y="212" font-size="2.7" fill="#63736c" text-anchor="start" dominant-baseline="hanging">20 mm（SVGを100%で印刷した場合）</text>
+</g></svg>
