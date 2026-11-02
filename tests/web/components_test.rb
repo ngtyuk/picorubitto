@@ -37,17 +37,17 @@ class BrowserFixture
     @result = { 'ok' => true, 'bytes' => 100, 'diagnostics' => [] }
     @launches = @downloads = 0
     @compiles = []
-    @built = false
+    @built_source = nil
   end
 
   def compile(mode)
     @compiles << mode
-    @built = @result['ok'] if mode == 'build'
+    @built_source = @result['ok'] ? @source.dup : nil if mode == 'build'
     BrowserResult.new(@result, &@on_await)
   end
 
   def builtCurrent
-    @built
+    @built_source == @source
   end
 
   def cancelCheck; end
@@ -107,6 +107,18 @@ class WebComponentsTest < Minitest::Test
     assert_equal 1, studio.bridge.launches
     assert_equal false, studio.state[:ui]['busy']
     assert_equal 'game.mrb · 100 B', studio.state[:ui]['diagnostics'][0]['message']
+  end
+
+  def test_run_reuses_current_build_and_rebuilds_after_editing
+    studio = StudioUnderTest.new
+    studio.run_game
+    studio.run_game
+    assert_equal ['build'], studio.bridge.compiles
+    assert_equal 2, studio.bridge.launches
+    studio.bridge.source = 'Game.tick(30)'
+    studio.run_game
+    assert_equal ['build', 'build'], studio.bridge.compiles
+    assert_equal 3, studio.bridge.launches
   end
 
   def test_zip_builds_once_and_reuses_the_current_binary

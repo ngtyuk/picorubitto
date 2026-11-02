@@ -70,7 +70,8 @@ class StudioComponent < GamingComponent
     end
   end
 
-  def restart
+  def run_game
+    return false if @busy
     bridge.builtCurrent == true ? bridge.launch : build
   end
 
@@ -185,8 +186,7 @@ class StudioComponent < GamingComponent
             end
             tag(:div, { "class" => "preview-actions" }) do
               tag(:button, { "id" => "open-key-config", "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.showKeyConfig } }) { translate_ui('キー設定', 'Key settings') }
-              tag(:button, { "id" => "build-run", disabled: state[:ui]["busy"], "class" => "button button-primary", "type" => "button", onclick: -> { build } }) { translate_ui('実行', 'Run') }
-              tag(:button, { "id" => "restart-preview", disabled: state[:ui]["busy"], "class" => "button button-quiet", "type" => "button", onclick: -> { restart } }) { translate_ui('再起動', 'Restart') }
+              tag(:button, { "id" => "build-run", disabled: state[:ui]["busy"], "class" => "button button-primary", "type" => "button", onclick: -> { run_game } }) { translate_ui('実行', 'Run') }
             end
           end
           tag(:div, { "class" => "preview-frame" }) do
