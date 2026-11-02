@@ -204,6 +204,7 @@ class StudioComponent < GamingComponent
           end
           tag(:div, { "class" => "editor-footer" }) do
             tag(:span, { "id" => "cursor-position" }) { "1:1" }
+            tag(:span) { translate_ui('Tab: インデント · Shift+Tab: 戻す · Esc後にTab: 移動', 'Tab: indent · Shift+Tab: outdent · Esc then Tab: move focus') }
             tag(:span) { "Ruby" }
           end
           tag(:div, { "class" => "assets-section" }) do

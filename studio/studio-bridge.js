@@ -367,6 +367,32 @@ function createStudioBridge() {
   }
 
   editor.addEventListener('scroll', syncEditorScroll);
+  let tabMovesFocus = false;
+  editor.addEventListener('blur', () => { tabMovesFocus = false; });
+  editor.addEventListener('keydown', (event) => {
+    if (event.isComposing) return;
+    if (event.key === 'Escape' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      tabMovesFocus = true;
+      return;
+    }
+    if (event.key !== 'Tab') { tabMovesFocus = false; return; }
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if (tabMovesFocus) { tabMovesFocus = false; return; }
+    event.preventDefault();
+    const direction = editor.selectionDirection;
+    const edit = window.StudioIndent.change(editor.value, editor.selectionStart, editor.selectionEnd, event.shiftKey);
+    if (editor.value.slice(edit.from, edit.to) === edit.replacement) return;
+    editor.setSelectionRange(edit.from, edit.to);
+    // insertText participates in the browser's native undo history.
+    let inserted = false;
+    try { inserted = document.execCommand('insertText', false, edit.replacement); } catch (_) { /* Use the textarea fallback. */ }
+    if (!inserted) {
+      editor.setRangeText(edit.replacement, edit.from, edit.to, 'end');
+      editor.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    editor.setSelectionRange(edit.start, edit.end, direction);
+    updateEditorDecorations();
+  });
   new ResizeObserver(syncEditorScroll).observe(editor);
   editor.addEventListener('click', updateEditorDecorations);
   editor.addEventListener('keyup', updateEditorDecorations);

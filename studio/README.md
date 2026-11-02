@@ -51,6 +51,7 @@ PicoRuby 4.0.5の`RITE0400`形式でROMを生成します。
 ## 使い方
 
 1. 左側の`main.rb`にRubyコードを書きます。キーワード・文字列・数値・コメントを色分けして表示します。
+   エディタ内のTabはインデント、Shift+Tabはインデント解除です。選択範囲にも使えます。キーボードでエディタから移動するにはEscを押してからTabを押します。
    初回は`Hello, world!`を表示するサンプルが入っています。
    公開版では「サンプルゲーム」から「Picocraft」「2D game example」「Sky Intercept」を選ぶと、確認後にコードと素材を読み込めます。現在のプロジェクトは置き換わります。
    サンプルを開くリンクも利用できます。例えば、`https://picorubitto.ngt-y.uk/studio/?sample=picocraft`で
