@@ -105,18 +105,31 @@ class WebComponentsTest < Minitest::Test
     assert_empty studio.state[:ui]['diagnostics']
   end
 
-  def test_runtime_error_survives_later_syntax_and_asset_diagnostics_until_run
+  def test_runtime_logs_survive_checks_and_runs_until_cleared
     studio = StudioUnderTest.new
+    studio.record_runtime_output(['first line', 'second line'])
     studio.record_runtime_error('Exception in task: NoMethodError')
     studio.check_source
-    assert_equal 'Exception in task: NoMethodError', studio.state[:ui]['diagnostics'][0]['message']
+    assert_equal ['first line', 'second line', 'Exception in task: NoMethodError'], studio.state[:ui]['diagnostics'].map { |item| item['message'] }
     studio.diagnostics([{ 'severity' => 'error', 'message' => 'missing asset' }])
-    assert_equal ['Exception in task: NoMethodError', 'missing asset'], studio.state[:ui]['diagnostics'].map { |item| item['message'] }
+    assert_equal ['first line', 'second line', 'Exception in task: NoMethodError', 'missing asset'], studio.state[:ui]['diagnostics'].map { |item| item['message'] }
     studio.run_game
-    refute studio.state[:ui]['diagnostics'].any? { |item| item['source'] == 'runtime' }
-    studio.record_runtime_error('Exception in task: NoMethodError')
+    assert_equal 3, studio.state[:ui]['diagnostics'].count { |item| item['source'] == 'runtime' }
+    studio.record_runtime_error('second error')
     studio.run_game
+    assert_equal 4, studio.state[:ui]['diagnostics'].count { |item| item['source'] == 'runtime' }
+    studio.clear_runtime_logs
     refute studio.state[:ui]['diagnostics'].any? { |item| item['source'] == 'runtime' }
+  end
+
+  def test_runtime_output_and_error_in_one_batch_keep_their_order
+    studio = StudioUnderTest.new
+    studio.record_runtime_events([
+      { 'severity' => 'info', 'message' => 'before error' },
+      { 'severity' => 'error', 'message' => 'NoMethodError' }
+    ])
+    assert_equal ['before error', 'NoMethodError'], studio.state[:ui]['diagnostics'].map { |item| item['message'] }
+    assert_equal '実行エラー', studio.state[:ui]['preview']
   end
 
   def test_failed_build_keeps_the_previous_game_and_releases_controls

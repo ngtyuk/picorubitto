@@ -2,6 +2,8 @@
   'use strict';
   let pending;
   let running = false;
+  let outputTimer;
+  let outputLines = [];
   const activeUrls = [];
   function refreshKeys() {
     window.StudioKeys.reload();
@@ -26,12 +28,25 @@
     if (parent !== window) parent.postMessage({ type, ...payload }, location.origin);
   }
   function report(error) {
+    flushOutput();
     send('studio-runtime-error', { message: error?.message || String(error) });
+  }
+  function flushOutput() {
+    clearTimeout(outputTimer);
+    outputTimer = null;
+    if (!outputLines.length) return;
+    send('studio-runtime-log', { messages: outputLines });
+    outputLines = [];
   }
   window.RunnerBrowser = {
     ready() { localizeStatus(); refreshKeys(); send('studio-ready'); },
     requestRun() { send('studio-request-run'); },
+    gameOutput(message) {
+      outputLines.push(message);
+      if (!outputTimer) outputTimer = setTimeout(flushOutput, 0);
+    },
     gameError(message) {
+      flushOutput();
       send('studio-runtime-error', { message: message || window.StudioI18n.t('ゲームの実行中にエラーが発生しました。', 'An error occurred while running the game.') });
     },
     async launch() {
@@ -52,6 +67,7 @@
       const originalError = console.error.bind(console);
       console.error = (...args) => {
         originalError(...args);
+        flushOutput();
         send('studio-runtime-error', { message: args.map(String).join(' ') });
       };
       try {
@@ -78,7 +94,7 @@
     window.dispatchEvent(new Event('blur'));
     refreshKeys();
   });
-  window.addEventListener('pagehide', () => activeUrls.forEach((url) => URL.revokeObjectURL(url)));
+  window.addEventListener('pagehide', () => { flushOutput(); activeUrls.forEach((url) => URL.revokeObjectURL(url)); });
   window.addEventListener('error', (event) => report(event.error || event.message));
   window.addEventListener('unhandledrejection', (event) => report(event.reason));
 })();

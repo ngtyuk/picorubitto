@@ -68,7 +68,7 @@ function createStudioBridge() {
   const state = {
     projectName: 'my-game', assets: new Map(), lastBuild: null, pendingRun: null,
     runNumber: 0, requestNumber: 0, pendingRequests: new Map(), checkTimer: null,
-    saveTimer: null, db: null, assetErrors: [], samples: [], sampleStatus: 'loading'
+    saveTimer: null, db: null, assetErrors: [], samples: [], sampleStatus: 'loading', runErrored: false
   };
 
   const pixelEditor = new PixelArtEditor(pixelDialog, {
@@ -230,6 +230,7 @@ function createStudioBridge() {
   }
 
   function launchPreview(bytes) {
+    state.runErrored = false;
     const payload = {
       type: 'studio-run', projectName: slugify(state.projectName), mrb: bytes.slice().buffer,
       assets: [...state.assets.values()].map((asset) => ({ name: asset.name, type: asset.type, bytes: asset.bytes.slice().buffer }))
@@ -528,6 +529,18 @@ function createStudioBridge() {
     if (keyDialog.open) refreshKeyConfig();
   });
 
+  let runtimeEventTimer;
+  let runtimeEvents = [];
+  function queueRuntimeEvent(severity, message) {
+    runtimeEvents.push({ severity, message });
+    if (!runtimeEventTimer) runtimeEventTimer = setTimeout(() => {
+      const events = runtimeEvents;
+      runtimeEvents = [];
+      runtimeEventTimer = null;
+      window.GamingWeb.emit('studio-runtime-events', { events });
+    }, 10);
+  }
+
   window.addEventListener('message', (event) => {
     if (event.source !== runner.contentWindow || event.origin !== location.origin) return;
     const data = event.data || {};
@@ -539,10 +552,12 @@ function createStudioBridge() {
     } else if (data.type === 'studio-request-run') {
       document.getElementById('build-run').click();
     } else if (data.type === 'studio-status') {
-      setPreviewStatus(data.message);
+      if (!state.runErrored) setPreviewStatus(data.message);
     } else if (data.type === 'studio-runtime-error') {
-      setPreviewStatus(t('実行エラー', 'Runtime error'));
-      window.GamingWeb.emit('studio-runtime-error', { message: data.message });
+      state.runErrored = true;
+      queueRuntimeEvent('error', String(data.message || ''));
+    } else if (data.type === 'studio-runtime-log' && Array.isArray(data.messages)) {
+      data.messages.filter((message) => typeof message === 'string').forEach((message) => queueRuntimeEvent('info', message));
     }
   });
 

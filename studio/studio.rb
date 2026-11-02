@@ -12,7 +12,9 @@ class StudioComponent < GamingComponent
   def component_mounted
     @busy = false
     @asset_errors = []
-    @runtime_error = nil
+    @runtime_logs = []
+    @current_diagnostics = []
+    @diagnostic_fallback = 'OK'
     listen('studio-state') { |data| update_view(data) }
     listen('studio-asset-list') { |assets| update_view('assets' => assets) }
     listen('studio-assets') do |errors|
@@ -20,9 +22,7 @@ class StudioComponent < GamingComponent
       diagnostics(errors, translate_ui('構文OK', 'Syntax OK'))
     end
     listen('studio-check') { check_source }
-    listen('studio-runtime-error') do |data|
-      record_runtime_error(data['message'])
-    end
+    listen('studio-runtime-events') { |data| record_runtime_events(data['events']) }
     bridge.start
   end
 
@@ -34,16 +34,40 @@ class StudioComponent < GamingComponent
   end
 
   def diagnostics(items, fallback = 'OK')
-    items = items.dup
-    items.unshift(@runtime_error) if @runtime_error
-    items = [{ 'severity' => 'ok', 'line' => 0, 'message' => fallback }] if items.empty?
-    update_view('diagnostics' => items)
+    @current_diagnostics = items.dup
+    @diagnostic_fallback = fallback
+    refresh_diagnostics
+  end
+
+  def refresh_diagnostics(extra = {})
+    items = (@runtime_logs || []) + (@current_diagnostics || [])
+    items = [{ 'severity' => 'ok', 'line' => 0, 'message' => @diagnostic_fallback || 'OK' }] if items.empty?
+    update_view(extra.merge('diagnostics' => items))
+  end
+
+  def record_runtime_events(events)
+    @runtime_logs ||= []
+    has_error = false
+    events.each do |event|
+      is_error = event['severity'] == 'error'
+      has_error ||= is_error
+      @runtime_logs << { 'severity' => is_error ? 'error' : 'info', 'source' => 'runtime', 'line' => 0, 'message' => event['message'] }
+    end
+    extra = has_error ? { 'preview' => translate_ui('実行エラー', 'Runtime error') } : {}
+    refresh_diagnostics(extra)
   end
 
   def record_runtime_error(message)
-    @runtime_error = { 'severity' => 'error', 'source' => 'runtime', 'line' => 0, 'message' => message }
-    update_view('preview' => translate_ui('実行エラー', 'Runtime error'))
-    diagnostics(@asset_errors)
+    record_runtime_events([{ 'severity' => 'error', 'message' => message }])
+  end
+
+  def record_runtime_output(messages)
+    record_runtime_events(messages.map { |message| { 'severity' => 'info', 'message' => message } })
+  end
+
+  def clear_runtime_logs
+    @runtime_logs = []
+    refresh_diagnostics
   end
 
   def show_samples
@@ -85,7 +109,6 @@ class StudioComponent < GamingComponent
 
   def run_game
     return false if @busy
-    @runtime_error = nil
     if bridge.builtCurrent == true
       diagnostics(@asset_errors)
       bridge.launch
@@ -222,6 +245,7 @@ class StudioComponent < GamingComponent
           tag(:div) do
             tag(:h2) { translate_ui('ログ', 'Log') }
           end
+          tag(:button, { "id" => "clear-log", "class" => "button button-quiet", "type" => "button", onclick: -> { clear_runtime_logs } }) { translate_ui('クリア', 'Clear') }
           tag(:span, { "id" => "save-status", "class" => "muted" }) { state[:ui]["save"] }
         end
         render_diagnostics

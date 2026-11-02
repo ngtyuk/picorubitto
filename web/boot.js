@@ -6,6 +6,7 @@ let module;
 let gameActive = false;
 let gameErrors = [];
 const runtimeStderr = console.error.bind(console);
+const runtimeStdout = console.log.bind(console);
 window.GamingWeb = {
   page,
   version: null,
@@ -87,6 +88,10 @@ try {
   ]);
   module = await createModule({
     locateFile(name) { return window.GamingWeb.resource(new URL(name, runtime).href); },
+    print(message) {
+      runtimeStdout(message);
+      if (page === 'runner' && gameActive && window.RunnerBrowser) window.RunnerBrowser.gameOutput(String(message));
+    },
     printErr(message) {
       runtimeStderr(message);
       if (page === 'runner' && gameActive && gameErrors.length < 64) gameErrors.push(String(message).slice(0, 2048));
