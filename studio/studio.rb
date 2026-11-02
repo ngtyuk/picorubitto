@@ -12,6 +12,7 @@ class StudioComponent < GamingComponent
   def component_mounted
     @busy = false
     @asset_errors = []
+    @runtime_error = nil
     listen('studio-state') { |data| update_view(data) }
     listen('studio-asset-list') { |assets| update_view('assets' => assets) }
     listen('studio-assets') do |errors|
@@ -20,8 +21,7 @@ class StudioComponent < GamingComponent
     end
     listen('studio-check') { check_source }
     listen('studio-runtime-error') do |data|
-      update_view('preview' => translate_ui('実行エラー', 'Runtime error'))
-      diagnostics([{ 'severity' => 'error', 'source' => 'runtime', 'line' => 0, 'message' => data['message'] }])
+      record_runtime_error(data['message'])
     end
     bridge.start
   end
@@ -34,8 +34,16 @@ class StudioComponent < GamingComponent
   end
 
   def diagnostics(items, fallback = 'OK')
+    items = items.dup
+    items.unshift(@runtime_error) if @runtime_error
     items = [{ 'severity' => 'ok', 'line' => 0, 'message' => fallback }] if items.empty?
     update_view('diagnostics' => items)
+  end
+
+  def record_runtime_error(message)
+    @runtime_error = { 'severity' => 'error', 'source' => 'runtime', 'line' => 0, 'message' => message }
+    update_view('preview' => translate_ui('実行エラー', 'Runtime error'))
+    diagnostics(@asset_errors)
   end
 
   def show_samples
@@ -77,7 +85,13 @@ class StudioComponent < GamingComponent
 
   def run_game
     return false if @busy
-    bridge.builtCurrent == true ? bridge.launch : build
+    @runtime_error = nil
+    if bridge.builtCurrent == true
+      diagnostics(@asset_errors)
+      bridge.launch
+    else
+      build
+    end
   end
 
   def download
