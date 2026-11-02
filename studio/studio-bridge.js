@@ -25,6 +25,7 @@ function createStudioBridge() {
   const sampleDialog = document.getElementById('sample-dialog');
   const keyDialog = document.getElementById('key-dialog');
   let waitingForKey = null;
+  let projectChanged = false;
   const heldKeys = new Map();
 
   function releaseKeys() {
@@ -198,11 +199,14 @@ function createStudioBridge() {
     scheduleSave();
   }
 
-  function renderAssets() {
-    const assets = [...state.assets.values()].sort((a, b) => a.name.localeCompare(b.name)).map((asset) => ({
+  function assetList() {
+    return [...state.assets.values()].sort((a, b) => a.name.localeCompare(b.name)).map((asset) => ({
       name: asset.name, sourceName: asset.sourceName, editable: !!asset.pixelArt
     }));
-    window.GamingWeb.emit('studio-asset-list', assets);
+  }
+
+  function renderAssets() {
+    window.GamingWeb.emit('studio-asset-list', assetList());
   }
 
   function launchPreview(bytes) {
@@ -293,6 +297,7 @@ function createStudioBridge() {
   }
 
   function scheduleSave() {
+    projectChanged = true;
     clearTimeout(state.saveTimer);
     state.saveTimer = setTimeout(saveProject, 250);
   }
@@ -350,6 +355,7 @@ function createStudioBridge() {
     projectName(value) { state.projectName = value; scheduleSave(); },
     cancelCheck() { clearTimeout(state.checkTimer); },
     source() { return editor.value; },
+    assetListJson() { return JSON.stringify(assetList()); },
     builtCurrent() { return !!state.lastBuild && state.lastBuild.source === editor.value; },
     async compile(mode) {
       const source = editor.value;
@@ -386,9 +392,12 @@ function createStudioBridge() {
       try { window.StudioKeys.reset(); waitingForKey = null; notifyKeyConfig(); refreshKeyConfig(t('初期設定に戻しました', 'Defaults restored')); }
       catch (_) { refreshKeyConfig(t('キー設定を保存できません', 'Could not save key settings')); }
     },
-    async openSample(id) {
+    async openSample(id, fromLink = false, hadSavedProject = true) {
       const sample = state.samples.find((item) => item.id === id);
-      if (!sample) return;
+      if (!sample) {
+        if (fromLink) window.alert(t('指定されたサンプルゲームが見つかりません。', 'The requested sample game was not found.'));
+        return;
+      }
       try {
         const base = `samples/${sample.id}/`;
         const get = async (path) => {
@@ -403,10 +412,12 @@ function createStudioBridge() {
         const assets = await Promise.all(assetResponses.map(async (response, index) => ({
           name: sample.assets[index], bytes: await response.arrayBuffer(), type: 'application/octet-stream'
         })));
-        if (!window.confirm(t(`現在のコードと素材を${sample.title}で置き換えますか？`, `Replace the current code and assets with ${sample.title}?`))) return;
-        sampleDialog.close();
+        if ((!fromLink || hadSavedProject || projectChanged) && !window.confirm(t(`現在のコードと素材を${sample.title}で置き換えますか？`, `Replace the current code and assets with ${sample.title}?`))) return;
+        if (sampleDialog.open) sampleDialog.close();
         applyProject({ projectName: sample.id, source, assets });
-        state.lastBuild = null; stopPreview(); scheduleSave();
+        state.lastBuild = null;
+        if (!fromLink || state.runNumber > 0 || state.pendingRun) stopPreview();
+        scheduleSave();
       } catch (error) {
         state.assetErrors = [{ severity: 'error', line: 0, column: 0, message: error.message }];
         reportAssets();
@@ -498,25 +509,40 @@ function createStudioBridge() {
     }
   });
 
-  (async () => {
+  const projectReady = (async () => {
     state.db = await openDatabase();
     const saved = await loadProject(state.db);
     applyProject(saved || { projectName: 'my-game', source: DEFAULT_SOURCE, assets: [] });
     publish({ ready: true });
     if (!state.db) publish({ save: t('保存エラー', 'Save failed') });
+    return !!saved;
   })();
 
-  (async () => {
+  const samplesReady = (async () => {
     try {
       const response = await fetch(window.GamingWeb.resource('samples/manifest.json'));
-      if (!response.ok) return;
+      if (!response.ok) return false;
       const samples = await response.json();
-      if (!Array.isArray(samples)) return;
+      if (!Array.isArray(samples)) return false;
       state.samples = samples.filter((sample) => sample && /^[a-z0-9-]+$/.test(sample.id) &&
         typeof sample.title === 'string' && Array.isArray(sample.assets) &&
         sample.assets.every((name) => safeAssetName(name)));
       publish({ samples: state.samples.map(({ id, title }) => ({ id, title })) });
-    } catch (error) { console.warn('サンプル一覧を読み込めません', error); }
+      return true;
+    } catch (error) { console.warn('サンプル一覧を読み込めません', error); return false; }
+  })();
+
+  (async () => {
+    const sampleId = new URL(location.href).searchParams.get('sample');
+    if (!sampleId || history.state?.studioHandledSample === sampleId) return;
+    const [hadSavedProject, samplesLoaded] = await Promise.all([projectReady, samplesReady]);
+    const currentState = history.state && typeof history.state === 'object' ? history.state : {};
+    history.replaceState({ ...currentState, studioHandledSample: sampleId }, '');
+    if (!samplesLoaded) {
+      window.alert(t('サンプル一覧を読み込めませんでした。', 'Could not load the sample games.'));
+      return;
+    }
+    await window.StudioBridge.openSample(sampleId, true, hadSavedProject);
   })();
 
 }

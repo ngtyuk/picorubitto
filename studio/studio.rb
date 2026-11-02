@@ -27,6 +27,9 @@ class StudioComponent < GamingComponent
   end
 
   def update_view(values)
+    # Asset imports can finish while other asynchronous UI updates are pending.
+    # Always render the current bridge state instead of an older event snapshot.
+    values = values.merge('assets' => JSON.parse(bridge.assetListJson.to_s)) if JS.respond_to?(:global)
     patch(ui: state[:ui].merge(values))
   end
 

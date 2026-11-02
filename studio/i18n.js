@@ -13,7 +13,8 @@
       try { localStorage.setItem('picorubitto-studio-language', value); } catch (_) { /* use URL for this visit */ }
       const url = new URL(location.href);
       url.searchParams.set('lang', value);
-      location.assign(url.href);
+      history.replaceState(history.state, '', url.href);
+      location.reload();
     }
   };
   const requested = new URL(location.href).searchParams.get('lang');
