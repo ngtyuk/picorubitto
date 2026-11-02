@@ -38,5 +38,5 @@ button:disabled { cursor: wait; opacity: .55; }
   font-weight: 700;
   text-decoration: none;
 }
-.pixel-mark { width: 28px; height: 28px; flex: 0 0 auto; image-rendering: pixelated; }
+.pixel-mark { width: 32px; height: 32px; flex: 0 0 auto; image-rendering: pixelated; }
 ::selection { color: var(--ink); background: var(--yellow); }

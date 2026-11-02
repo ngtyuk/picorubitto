@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" shape-rendering="crispEdges">
+  <!-- 16 × 16 version of the PicoRubitto console mark. -->
+  <path fill="#532a37" d="M3 0h10v1h1v1h1v11h-1v2h-1v1H3v-1H2v-1H1V2h1V1h1z"/>
+  <path fill="#cb354d" d="M3 1h10v1h1v11h-1v1H3v-1H2V2h1z"/>
+  <path fill="#ed5b69" d="M3 1h10v1H3zM2 2h1v10H2z"/>
+  <path fill="#532a37" d="M2 2h12v8H2z"/>
+  <path fill="#fff1d5" d="M3 3h10v6H3z"/>
+  <path fill="#a92242" d="M6 3h4v1h1v1h1V4h1v3h-1v1h-1v1H5V8H4V7H3V4h1v1h1V4h1z"/>
+  <path fill="#ed5b69" d="M6 4h4v1h1v1h1v1h-2v1H6V7H4V6h1V5h1z"/>
+  <path fill="#ffe0bd" d="M6 4h1v1H6z"/>
+  <path fill="#532a37" d="M6 6h1v1H6zM9 6h1v1H9zM7 7h2v1H7z"/>
+  <path fill="#532a37" d="M4 10h2v1h1v2H6v1H4v-1H3v-2h1zM10 10h2v1h1v2h-1v1h-2v-1H9v-2h1z"/>
+  <path fill="#f4bf69" d="M4 11h2v2H4zM10 11h2v2h-2z"/>
+</svg>
