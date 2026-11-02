@@ -30,6 +30,7 @@
   }
   window.RunnerBrowser = {
     ready() { localizeStatus(); refreshKeys(); send('studio-ready'); },
+    requestRun() { send('studio-request-run'); },
     async launch() {
       const payload = pending;
       pending = null;

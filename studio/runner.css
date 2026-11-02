@@ -24,4 +24,7 @@ h1 { margin: 0; font-size: 14px; text-align: center; }
   .action-buttons button { width: 34px; height: 34px; }
 }
 .waiting { display: grid; place-items: center; min-height: 300px; margin: 14px 0; border: 2px dashed var(--shadow); color: var(--muted); font-size: 13px; }
+.preview-run { padding: 12px 28px; border: 2px solid var(--line); color: var(--ink); background: var(--sage); box-shadow: 0 3px 0 var(--line); font-size: 14px; font-weight: 700; }
+.preview-run:hover { background: var(--yellow); }
+.preview-run:active { transform: translateY(3px); box-shadow: none; }
 .preview-note { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.6; text-align: center; }

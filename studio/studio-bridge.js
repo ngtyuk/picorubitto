@@ -501,6 +501,8 @@ function createStudioBridge() {
       state.pendingRun = null;
       const transfer = [payload.mrb, ...payload.assets.map((asset) => asset.bytes)];
       runner.contentWindow.postMessage(payload, location.origin, transfer);
+    } else if (data.type === 'studio-request-run') {
+      document.getElementById('build-run').click();
     } else if (data.type === 'studio-status') {
       setPreviewStatus(data.message);
     } else if (data.type === 'studio-runtime-error') {

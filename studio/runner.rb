@@ -17,7 +17,9 @@ class RunnerComponent < GamingComponent
     tag(:main, class: 'shell') do
       tag(:h1, id: 'game-title') { state[:title] }
       tag(:p, id: 'game-description', class: 'description') { state[:error] }
-      tag(:section, id: 'waiting', class: 'waiting', style: state[:running] ? 'display:none' : '') { translate_ui('実行でスタート', 'Press Run to start') }
+      tag(:section, id: 'waiting', class: 'waiting', style: state[:running] ? 'display:none' : '') do
+        tag(:button, id: 'preview-run', class: 'preview-run', type: 'button', onclick: -> { JS.global[:RunnerBrowser].requestRun }) { translate_ui('実行', 'Run') }
+      end
       tag(:div, style: state[:running] ? '' : 'display:none') do
         tag(:section, id: 'machine', class: 'machine', 'aria-label' => translate_ui('ゲーム画面', 'Game screen')) do
           tag(:canvas, id: 'screen', width: 320, height: 240)
