@@ -31,6 +31,9 @@
   window.RunnerBrowser = {
     ready() { localizeStatus(); refreshKeys(); send('studio-ready'); },
     requestRun() { send('studio-request-run'); },
+    gameError(message) {
+      send('studio-runtime-error', { message: message || window.StudioI18n.t('ゲームの実行中にエラーが発生しました。', 'An error occurred while running the game.') });
+    },
     async launch() {
       const payload = pending;
       pending = null;

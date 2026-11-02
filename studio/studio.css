@@ -82,6 +82,7 @@ h2, h3, p { margin: 0; }
 .diagnostics-heading { background: #eee4c9; }
 .diagnostics-list { min-height: 52px; padding: 12px 18px; }
 .diagnostic { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; padding: 6px 0; color: var(--muted); font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+.diagnostic > div:last-child { white-space: pre-wrap; }
 .diagnostic + .diagnostic { border-top: 1px solid var(--shadow); }
 .diagnostic.error { color: var(--red); }
 .diagnostic.warning { color: #805414; }

@@ -21,7 +21,7 @@ class StudioComponent < GamingComponent
     listen('studio-check') { check_source }
     listen('studio-runtime-error') do |data|
       update_view('preview' => translate_ui('実行エラー', 'Runtime error'))
-      diagnostics([{ 'severity' => 'error', 'line' => 0, 'message' => data['message'] }])
+      diagnostics([{ 'severity' => 'error', 'source' => 'runtime', 'line' => 0, 'message' => data['message'] }])
     end
     bridge.start
   end
@@ -121,7 +121,7 @@ class StudioComponent < GamingComponent
               column = item['column'].to_i
               tag(:button, type: 'button', onclick: -> { bridge.goToLocation(line, column) }) { "#{line}:#{column}" }
             else
-              tag(:span) { 'build' }
+              tag(:span) { item['source'] == 'runtime' ? 'runtime' : 'build' }
             end
           end
           tag(:div) { item['message'] }

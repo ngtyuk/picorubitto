@@ -4,6 +4,8 @@ const uiText = (ja, en) => window.StudioI18n ? window.StudioI18n.t(ja, en) : ja;
 const runtime = new URL('../emulator/picoruby/picoruby.js', import.meta.url);
 let module;
 let gameActive = false;
+let gameErrors = [];
+const runtimeStderr = console.error.bind(console);
 window.GamingWeb = {
   page,
   version: null,
@@ -84,7 +86,11 @@ try {
     }))
   ]);
   module = await createModule({
-    locateFile(name) { return window.GamingWeb.resource(new URL(name, runtime).href); }
+    locateFile(name) { return window.GamingWeb.resource(new URL(name, runtime).href); },
+    printErr(message) {
+      runtimeStderr(message);
+      if (page === 'runner' && gameActive && gameErrors.length < 64) gameErrors.push(String(message).slice(0, 2048));
+    }
   });
   window.picorubyModule = module;
   if (module.ccall('picorb_init', 'number', [], []) !== 0) throw new Error(uiText('PicoRubyを初期化できません', 'Could not initialize PicoRuby'));
@@ -98,10 +104,12 @@ try {
     // UI-only pages yield quickly; game pages keep the emulator's 16ms slice.
     const end = performance.now() + (gameActive ? 16 : 0.5);
     do {
+      gameErrors = [];
       const status = module._mrb_run_step_status();
       if (status === 2 && gameActive && window.GameSystemScreen) {
         if (window.GameEmulator) window.GameEmulator.audioStop();
         window.GameSystemScreen.error('GAME');
+        if (page === 'runner' && window.RunnerBrowser) window.RunnerBrowser.gameError(gameErrors.join('\n'));
         gameActive = false;
       }
       if (status < 0) {
