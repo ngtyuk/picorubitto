@@ -29,7 +29,7 @@ class RunnerComponent < GamingComponent
         end
         controls
       end
-      tag(:p, class: 'preview-note') { translate_ui('矢印 移動 · Z A · X B · Q/E L/R · P/O START/SELECT', 'Arrows: move · Z: A · X: B · Q/E: L/R · P/O: START/SELECT') }
+      tag(:p, id: 'key-help', class: 'preview-note')
     end
   end
 end

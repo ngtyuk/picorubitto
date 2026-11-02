@@ -70,8 +70,8 @@ try {
   window.GamingWeb.version = await manifest.json();
   const pageScripts = page === 'studio'
     ? ['vendor/prism/prism-core.min.js', 'vendor/prism/prism-clike.min.js', 'vendor/prism/prism-ruby.min.js',
-       'pixel-art-model.js', 'pixel-editor.js', 'studio-bridge.js']
-    : page === 'runner' ? ['../emulator/system-screen.js', 'runner-bridge.js']
+       'pixel-art-model.js', 'pixel-editor.js', 'key-config.js', 'studio-bridge.js']
+    : page === 'runner' ? ['../emulator/system-screen.js', 'key-config.js', 'runner-bridge.js']
     : page === 'docs' ? ['vendor/marked/marked.umd.js', 'docs-bridge.js'] : ['system-screen.js', 'browser-bridge.js'];
   for (const script of pageScripts) await window.GamingWeb.loadScript(script);
   const scripts = Array.from(document.querySelectorAll('script[type="text/ruby"]'));

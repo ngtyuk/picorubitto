@@ -20,6 +20,7 @@ Markedで表示します。本文の正本はMarkdownのまま管理します。
 | `studio/studio-bridge.js` | Workerとのコンパイル通信、IndexedDB、PNG変換、ZIP、iframeとの通信 |
 | `studio/pixel-editor.js`, `studio/pixel-art-model.js` | Pointer Capture、Canvas、アニメーション、TypedArrayの画素・履歴・RAW/PNG変換 |
 | `studio/runner-bridge.js` | 親画面との通信、MRBと素材の受け渡し |
+| `studio/key-config.js` | Studio共通のキー割り当て、競合時の入れ替え、ブラウザへの保存 |
 | `emulator/browser-bridge.js` | HTTPのディレクトリ一覧・ソース取得、ゲームの起動 |
 | `emulator/emulator.js` | ゲーム実行用のCanvas・音声・入力・保存バックエンド |
 
@@ -61,6 +62,7 @@ Rubyの制御テストは、WASMビルドと同じPicoRuby checkoutのFunicular�
 ```sh
 ruby tests/web/components_test.rb
 node --test tests/web/pixel-art-model.test.js
+node --test tests/web/key-config.test.js
 ```
 
 ブラウザでは以下を確認します。

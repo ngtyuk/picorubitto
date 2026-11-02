@@ -3,6 +3,11 @@
   let pending;
   let running = false;
   const activeUrls = [];
+  function refreshKeys() {
+    window.StudioKeys.reload();
+    const help = document.getElementById('key-help');
+    if (help) help.textContent = window.StudioKeys.actions.map((action) => `${action}: ${window.StudioKeys.display(action)}`).join(' · ');
+  }
   function localizeStatus() {
     if (window.StudioI18n.language !== 'en') return;
     const statusTranslations = { '準備完了': 'Ready', '音声: 再生中': 'Audio: playing', '音声: 停止': 'Audio: stopped' };
@@ -24,7 +29,7 @@
     send('studio-runtime-error', { message: error?.message || String(error) });
   }
   window.RunnerBrowser = {
-    ready() { localizeStatus(); send('studio-ready'); },
+    ready() { localizeStatus(); refreshKeys(); send('studio-ready'); },
     async launch() {
       const payload = pending;
       pending = null;
@@ -59,6 +64,15 @@
       window.GamingWeb.emit('runner-state', { running: true, title: data.projectName || window.StudioI18n.t('ゲーム', 'Game'), launch: true });
     }
     if (data.type === 'studio-key') window.dispatchEvent(new KeyboardEvent(data.action, { key: data.key, bubbles: true }));
+    if (data.type === 'studio-keymap-changed') {
+      window.dispatchEvent(new Event('blur'));
+      refreshKeys();
+    }
+  });
+  window.addEventListener('storage', (event) => {
+    if (event.key !== window.StudioKeys.storageKey) return;
+    window.dispatchEvent(new Event('blur'));
+    refreshKeys();
   });
   window.addEventListener('pagehide', () => activeUrls.forEach((url) => URL.revokeObjectURL(url)));
   window.addEventListener('error', (event) => report(event.error || event.message));

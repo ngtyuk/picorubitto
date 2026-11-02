@@ -181,6 +181,7 @@ class StudioComponent < GamingComponent
               tag(:h2) { translate_ui('ゲーム', 'Game') }
             end
             tag(:div, { "class" => "preview-actions" }) do
+              tag(:button, { "id" => "open-key-config", "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.showKeyConfig } }) { translate_ui('キー設定', 'Key settings') }
               tag(:button, { "id" => "build-run", disabled: state[:ui]["busy"], "class" => "button button-primary", "type" => "button", onclick: -> { build } }) { translate_ui('実行', 'Run') }
               tag(:button, { "id" => "restart-preview", disabled: state[:ui]["busy"], "class" => "button button-quiet", "type" => "button", onclick: -> { restart } }) { translate_ui('再起動', 'Restart') }
             end
@@ -220,6 +221,25 @@ class StudioComponent < GamingComponent
               tag(:button, { "class" => "button sample-item", "type" => "button", onclick: -> { bridge.openSample(sample['id']) } }) { sample['title'] }
             end
           end
+        end
+      end
+      tag(:dialog, { "id" => "key-dialog", "class" => "sample-dialog key-dialog", "aria-labelledby" => "key-title" }) do
+        tag(:header, { "class" => "panel-heading" }) do
+          tag(:h2, { "id" => "key-title" }) { translate_ui('キー設定', 'Key settings') }
+          tag(:button, { "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.closeKeyConfig } }) { translate_ui('閉じる', 'Close') }
+        end
+        tag(:div, { "class" => "sample-body" }) do
+          tag(:p, { "class" => "hint" }) { translate_ui('変更する操作を選び、割り当てたいキーを押してください。', 'Select an action, then press the key you want to assign.') }
+          tag(:div, { "class" => "key-grid" }) do
+            [['UP', '↑'], ['DOWN', '↓'], ['LEFT', '←'], ['RIGHT', '→'], ['A', 'A'], ['B', 'B'], ['L', 'L'], ['R', 'R'], ['SELECT', 'SELECT'], ['START', 'START']].each do |action, label|
+              tag(:button, { "class" => "button key-binding", "type" => "button", "data-key-action" => action, onclick: -> { bridge.captureKey(action) } }) do
+                tag(:span) { label }
+                tag(:span, { "id" => "key-value-#{action}", "class" => "key-value" })
+              end
+            end
+          end
+          tag(:p, { "id" => "key-config-status", "class" => "hint", "role" => "status", "aria-live" => "polite" })
+          tag(:button, { "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.resetKeys } }) { translate_ui('初期設定に戻す', 'Restore defaults') }
         end
       end
       component(PixelEditorComponent)

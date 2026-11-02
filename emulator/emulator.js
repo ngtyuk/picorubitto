@@ -4465,21 +4465,31 @@
   }
 
   document.querySelectorAll('[data-button]').forEach(bindButton);
+  function keyboardButton(key) {
+    if (window.StudioKeys) return buttons[window.StudioKeys.buttonForKey(key)];
+    return keys.get(key);
+  }
+  const heldKeyboard = new Map();
   window.addEventListener('keydown', (event) => {
     if (event.target.id === 'audio-dial') return;
-    const bit = keys.get(event.key);
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    const bit = keyboardButton(event.key);
     if (!bit) return;
+    heldKeyboard.set(event.code || event.key, bit);
     event.preventDefault();
     unlockAudio();
     setButton(bit, true);
   });
   window.addEventListener('keyup', (event) => {
-    const bit = keys.get(event.key);
+    const id = event.code || event.key;
+    const bit = heldKeyboard.get(id);
     if (!bit) return;
+    heldKeyboard.delete(id);
     if (event.target.id !== 'audio-dial') event.preventDefault();
-    setButton(bit, false);
+    if (![...heldKeyboard.values()].includes(bit)) setButton(bit, false);
   });
   window.addEventListener('blur', () => {
+    heldKeyboard.clear();
     pendingReleasedState |= inputState;
     inputState = 0;
   });

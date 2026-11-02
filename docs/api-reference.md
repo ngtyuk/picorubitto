@@ -137,9 +137,10 @@ end
 
 実機の入力ピンは、十字キーがGP2〜GP5、A/BがGP6/GP7、L/R/START/SELECTが
 GP9/GP12/GP14/GP16です。すべて内部プルアップで、GNDへ接続すると押下になります。
-WASMは矢印キーと画面ボタンを使います。キーボードでは`Z`・`Enter`・`Space`がA、
-`X`がB、`Q`/`E`がL/R、`P`/`O`がSTART/SELECTです。各問い合わせはフレーム内で同じ値を
-返します。不正なボタン値は`ArgumentError`です。
+WASMはキーボードと画面ボタンを使います。キーボードの初期設定は矢印キーが十字キー、
+`Z`・`Enter`・`Space`がA、`X`がB、`Q`/`E`がL/R、`P`/`O`がSTART/SELECTです。
+Studioでは「キー設定」から変更できます。各問い合わせはフレーム内で同じ値を返します。
+不正なボタン値は`ArgumentError`です。
 
 ## ディスプレイ
 

@@ -23,6 +23,26 @@ function createStudioBridge() {
   const runner = document.getElementById('runner');
   const pixelDialog = document.getElementById('pixel-dialog');
   const sampleDialog = document.getElementById('sample-dialog');
+  const keyDialog = document.getElementById('key-dialog');
+  let waitingForKey = null;
+  const heldKeys = new Map();
+
+  function releaseKeys() {
+    for (const key of heldKeys.values()) runner.contentWindow?.postMessage({ type: 'studio-key', action: 'keyup', key }, location.origin);
+    heldKeys.clear();
+  }
+  function refreshKeyConfig(message = '') {
+    for (const action of window.StudioKeys.actions) {
+      document.getElementById(`key-value-${action}`).textContent = window.StudioKeys.display(action);
+      keyDialog.querySelector(`[data-key-action="${action}"]`).setAttribute('aria-pressed', String(waitingForKey === action));
+    }
+    document.getElementById('key-config-status').textContent = message;
+  }
+  function notifyKeyConfig() {
+    releaseKeys();
+    runner.contentWindow?.postMessage({ type: 'studio-keymap-changed' }, location.origin);
+  }
+  keyDialog.addEventListener('close', () => { waitingForKey = null; });
 
   const state = {
     projectName: 'my-game', assets: new Map(), lastBuild: null, pendingRun: null,
@@ -317,7 +337,7 @@ function createStudioBridge() {
   }
 
   function isTypingTarget(target) {
-    return target && typeof target.matches === 'function' && target.matches('textarea, input, select');
+    return target && typeof target.matches === 'function' && target.matches('textarea, input, select, [contenteditable="true"]');
   }
 
   editor.addEventListener('scroll', syncEditorScroll);
@@ -356,6 +376,16 @@ function createStudioBridge() {
     },
     showSamples() { if (!sampleDialog.open) sampleDialog.showModal(); },
     closeSamples() { sampleDialog.close(); },
+    showKeyConfig() { releaseKeys(); waitingForKey = null; refreshKeyConfig(); if (!keyDialog.open) keyDialog.showModal(); },
+    closeKeyConfig() { keyDialog.close(); },
+    captureKey(action) {
+      waitingForKey = action;
+      refreshKeyConfig(t(`${action}に割り当てるキーを押してください（Escでキャンセル）`, `Press a key for ${action} (Esc to cancel)`));
+    },
+    resetKeys() {
+      try { window.StudioKeys.reset(); waitingForKey = null; notifyKeyConfig(); refreshKeyConfig(t('初期設定に戻しました', 'Defaults restored')); }
+      catch (_) { refreshKeyConfig(t('キー設定を保存できません', 'Could not save key settings')); }
+    },
     async openSample(id) {
       const sample = state.samples.find((item) => item.id === id);
       if (!sample) return;
@@ -414,16 +444,42 @@ function createStudioBridge() {
   });
   window.GamingWeb.ready();
 
-  const forwardedKeys = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'Z', 'Enter', ' ', 'x', 'X', 'q', 'Q', 'e', 'E', 'p', 'P', 'o', 'O']);
   window.addEventListener('keydown', (event) => {
-    if (pixelDialog.open || sampleDialog.open || isTypingTarget(event.target) || !forwardedKeys.has(event.key)) return;
+    if (!keyDialog.open || !waitingForKey) return;
     event.preventDefault();
-    runner.contentWindow?.postMessage({ type: 'studio-key', action: 'keydown', key: event.key }, location.origin);
+    event.stopImmediatePropagation();
+    if (event.key === 'Escape') { waitingForKey = null; refreshKeyConfig(t('キャンセルしました', 'Canceled')); return; }
+    if (event.ctrlKey || event.metaKey || event.altKey || !window.StudioKeys.validKey(event.key)) {
+      refreshKeyConfig(t('このキーは割り当てられません', 'This key cannot be assigned')); return;
+    }
+    try {
+      window.StudioKeys.assign(waitingForKey, event.key);
+      waitingForKey = null; notifyKeyConfig(); refreshKeyConfig(t('キー設定を保存しました', 'Key settings saved'));
+    } catch (_) { refreshKeyConfig(t('キー設定を保存できません', 'Could not save key settings')); }
+  }, true);
+  window.addEventListener('keydown', (event) => {
+    if ((event.key === 'Enter' || event.key === ' ') && event.target?.matches?.('button, a')) return;
+    if (keyDialog.open || pixelDialog.open || sampleDialog.open || isTypingTarget(event.target) || event.ctrlKey || event.metaKey || event.altKey || !window.StudioKeys.buttonForKey(event.key)) return;
+    event.preventDefault();
+    const key = window.StudioKeys.normalize(event.key);
+    heldKeys.set(event.code || key, key);
+    runner.contentWindow?.postMessage({ type: 'studio-key', action: 'keydown', key }, location.origin);
   });
   window.addEventListener('keyup', (event) => {
-    if (pixelDialog.open || sampleDialog.open || isTypingTarget(event.target) || !forwardedKeys.has(event.key)) return;
+    const id = event.code || window.StudioKeys.normalize(event.key);
+    const key = heldKeys.get(id);
+    if (!key) return;
+    heldKeys.delete(id);
     event.preventDefault();
-    runner.contentWindow?.postMessage({ type: 'studio-key', action: 'keyup', key: event.key }, location.origin);
+    runner.contentWindow?.postMessage({ type: 'studio-key', action: 'keyup', key }, location.origin);
+  });
+  window.addEventListener('blur', releaseKeys);
+  window.addEventListener('storage', (event) => {
+    if (event.key !== window.StudioKeys.storageKey) return;
+    releaseKeys();
+    window.StudioKeys.reload();
+    waitingForKey = null;
+    if (keyDialog.open) refreshKeyConfig();
   });
 
   window.addEventListener('message', (event) => {
