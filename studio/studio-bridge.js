@@ -48,7 +48,7 @@ function createStudioBridge() {
   const state = {
     projectName: 'my-game', assets: new Map(), lastBuild: null, pendingRun: null,
     runNumber: 0, requestNumber: 0, pendingRequests: new Map(), checkTimer: null,
-    saveTimer: null, db: null, assetErrors: [], samples: []
+    saveTimer: null, db: null, assetErrors: [], samples: [], sampleStatus: 'loading'
   };
 
   const pixelEditor = new PixelArtEditor(pixelDialog, {
@@ -380,7 +380,9 @@ function createStudioBridge() {
       }
       window.StudioI18n.setLanguage(window.StudioI18n.language === 'ja' ? 'en' : 'ja');
     },
+    sampleStateJson() { return JSON.stringify({ samples: state.samples.map(({ id, title }) => ({ id, title })), sampleStatus: state.sampleStatus }); },
     showSamples() { if (!sampleDialog.open) sampleDialog.showModal(); },
+    retrySamples() { loadSamples(); },
     closeSamples() { sampleDialog.close(); },
     showKeyConfig() { releaseKeys(); waitingForKey = null; refreshKeyConfig(); if (!keyDialog.open) keyDialog.showModal(); },
     closeKeyConfig() { keyDialog.close(); },
@@ -520,19 +522,33 @@ function createStudioBridge() {
     return !!saved;
   })();
 
-  const samplesReady = (async () => {
-    try {
-      const response = await fetch(window.GamingWeb.resource('samples/manifest.json'));
-      if (!response.ok) return false;
-      const samples = await response.json();
-      if (!Array.isArray(samples)) return false;
-      state.samples = samples.filter((sample) => sample && /^[a-z0-9-]+$/.test(sample.id) &&
-        typeof sample.title === 'string' && Array.isArray(sample.assets) &&
-        sample.assets.every((name) => safeAssetName(name)));
-      publish({ samples: state.samples.map(({ id, title }) => ({ id, title })) });
-      return true;
-    } catch (error) { console.warn('サンプル一覧を読み込めません', error); return false; }
-  })();
+  let sampleRequest;
+  function loadSamples() {
+    if (state.sampleStatus === 'loading' && sampleRequest) return sampleRequest;
+    state.sampleStatus = 'loading';
+    publish({ sampleStatus: state.sampleStatus });
+    sampleRequest = (async () => {
+      try {
+        const response = await fetch(window.GamingWeb.resource('samples/manifest.json'));
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const samples = await response.json();
+        if (!Array.isArray(samples)) throw new Error('Invalid sample manifest');
+        state.samples = samples.filter((sample) => sample && /^[a-z0-9-]+$/.test(sample.id) &&
+          typeof sample.title === 'string' && Array.isArray(sample.assets) &&
+          sample.assets.every((name) => safeAssetName(name)));
+        state.sampleStatus = 'loaded';
+        publish({ samples: state.samples.map(({ id, title }) => ({ id, title })), sampleStatus: state.sampleStatus });
+        return true;
+      } catch (error) {
+        state.sampleStatus = 'error';
+        publish({ sampleStatus: state.sampleStatus });
+        console.warn('サンプル一覧を読み込めません', error);
+        return false;
+      }
+    })();
+    return sampleRequest;
+  }
+  const samplesReady = loadSamples();
 
   (async () => {
     const sampleId = new URL(location.href).searchParams.get('sample');

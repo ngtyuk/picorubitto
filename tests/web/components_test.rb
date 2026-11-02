@@ -60,6 +60,12 @@ class BrowserFixture
     @downloads += 1
     2
   end
+
+  def sampleStateJson
+    JSON.generate('sampleStatus' => 'loaded', 'samples' => [{ 'id' => 'picocraft', 'title' => 'Picocraft' }])
+  end
+
+  def showSamples; end
 end
 
 class StudioUnderTest < StudioComponent
@@ -82,6 +88,14 @@ class StudioUnderTest < StudioComponent
 end
 
 class WebComponentsTest < Minitest::Test
+  def test_opening_samples_synchronizes_the_current_list
+    studio = StudioUnderTest.new
+    assert_empty studio.state[:ui]['samples']
+    studio.show_samples
+    assert_equal 'loaded', studio.state[:ui]['sampleStatus']
+    assert_equal 'picocraft', studio.state[:ui]['samples'][0]['id']
+  end
+
   def test_stale_syntax_result_does_not_replace_the_current_view
     studio = StudioUnderTest.new
     studio.bridge.result = { 'ok' => false, 'diagnostics' => [{ 'message' => 'old error' }] }

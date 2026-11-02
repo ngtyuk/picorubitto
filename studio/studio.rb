@@ -2,7 +2,7 @@
 class StudioComponent < GamingComponent
   def initialize_state
     { ui: { "build" => translate_ui('準備中', 'Preparing'), "preview" => translate_ui('待機中', 'Waiting'), "save" => translate_ui('自動保存', 'Saved automatically'),
-            "kind" => "", "busy" => false, "ready" => false, "assets" => [], "diagnostics" => [], "samples" => [] } }
+            "kind" => "", "busy" => false, "ready" => false, "assets" => [], "diagnostics" => [], "samples" => [], "sampleStatus" => "loading" } }
   end
 
   def bridge
@@ -36,6 +36,11 @@ class StudioComponent < GamingComponent
   def diagnostics(items, fallback = 'OK')
     items = [{ 'severity' => 'ok', 'line' => 0, 'message' => fallback }] if items.empty?
     update_view('diagnostics' => items)
+  end
+
+  def show_samples
+    update_view(JSON.parse(bridge.sampleStateJson.to_s))
+    bridge.showSamples
   end
 
   def check_source
@@ -137,7 +142,7 @@ class StudioComponent < GamingComponent
           tag(:input, { "id" => "project-name", "class" => "project-name", "value" => "my-game", "aria-label" => translate_ui('プロジェクト名', 'Project name'), oninput: ->(event) { bridge.projectName(event.target[:value].to_s) } })
           tag(:button, { "id" => "new-project", "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.newProject } }) { translate_ui('新規', 'New') }
           tag(:button, { "id" => "import-source", "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.openSource } }) { translate_ui('開く', 'Open') }
-          tag(:button, { "id" => "open-samples", "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.showSamples } }) { translate_ui('サンプルゲーム', 'Sample games') }
+          tag(:button, { "id" => "open-samples", "class" => "button button-quiet", "type" => "button", onclick: -> { show_samples } }) { translate_ui('サンプルゲーム', 'Sample games') }
           tag(:input, { "id" => "source-file", "type" => "file", "accept" => ".rb,text/plain", "hidden" => true, onchange: -> { bridge.importSource } })
           tag(:button, { "id" => "download-zip", disabled: state[:ui]["busy"], "class" => "button button-accent", "type" => "button", onclick: -> { download } }) { translate_ui('書き出す', 'Export') }
           tag(:button, { "id" => "change-language", disabled: !state[:ui]['ready'], "class" => "button button-quiet", "type" => "button", "aria-label" => translate_ui('英語に切り替え', 'Switch to Japanese'), onclick: -> { bridge.changeLanguage } }) { translate_ui('English', '日本語') }
@@ -217,7 +222,12 @@ class StudioComponent < GamingComponent
         end
         tag(:div, { "class" => "sample-body" }) do
           tag(:p, { "class" => "hint" }) { translate_ui('選んだゲームのコードと素材を読み込みます。', 'Load the selected game’s code and assets.') }
-          if state[:ui]['samples'].empty?
+          if state[:ui]['sampleStatus'] == 'loading'
+            tag(:p, { "class" => "hint", "role" => "status" }) { translate_ui('サンプルゲームを読み込み中…', 'Loading sample games…') }
+          elsif state[:ui]['sampleStatus'] == 'error'
+            tag(:p, { "class" => "hint", "role" => "alert" }) { translate_ui('サンプルゲームを読み込めませんでした。', 'Could not load sample games.') }
+            tag(:button, { "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.retrySamples } }) { translate_ui('再試行', 'Retry') }
+          elsif state[:ui]['samples'].empty?
             tag(:p, { "class" => "hint" }) { translate_ui('サンプルゲームはありません。', 'No sample games are available.') }
           else
             state[:ui]['samples'].each do |sample|
