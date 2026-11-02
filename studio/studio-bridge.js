@@ -307,6 +307,13 @@ function createStudioBridge() {
     return entries.length;
   }
 
+  function downloadRuntimeLog(content) {
+    const url = URL.createObjectURL(new Blob([content], { type: 'text/plain;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url; link.download = `${slugify(state.projectName)}-log.txt`; link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
   function openDatabase() {
     if (!('indexedDB' in window)) return Promise.resolve(null);
     return new Promise((resolve) => {
@@ -417,6 +424,7 @@ function createStudioBridge() {
     },
     launch() { if (state.lastBuild) launchPreview(state.lastBuild.bytes); },
     downloadZip,
+    downloadRuntimeLog,
     goToLocation,
     openColorTool() { releaseKeys(); updateColor(colorHex.value.trim()); if (!colorDialog.open) colorDialog.showModal(); },
     closeColorTool() { colorDialog.close(); },
@@ -564,7 +572,7 @@ function createStudioBridge() {
       runtimeEvents = [];
       runtimeEventTimer = null;
       window.GamingWeb.emit('studio-runtime-events', { events });
-    }, 10);
+    }, 100);
   }
 
   window.addEventListener('message', (event) => {

@@ -1,8 +1,11 @@
 # Browser Studio: Funicular owns the page, actions, assets and diagnostics.
 class StudioComponent < GamingComponent
+  VISIBLE_RUNTIME_LOG_LINES = 200
+
   def initialize_state
     { ui: { "build" => translate_ui('準備中', 'Preparing'), "preview" => translate_ui('待機中', 'Waiting'), "save" => translate_ui('自動保存', 'Saved automatically'),
-            "kind" => "", "busy" => false, "ready" => false, "assets" => [], "diagnostics" => [], "samples" => [], "sampleStatus" => "loading" } }
+            "kind" => "", "busy" => false, "ready" => false, "assets" => [], "diagnostics" => [], "hiddenLogLines" => 0, "runtimeLogCount" => 0,
+            "samples" => [], "sampleStatus" => "loading" } }
   end
 
   def bridge
@@ -40,9 +43,10 @@ class StudioComponent < GamingComponent
   end
 
   def refresh_diagnostics(extra = {})
-    items = (@runtime_logs || []) + (@current_diagnostics || [])
+    logs = @runtime_logs || []
+    items = logs.last(VISIBLE_RUNTIME_LOG_LINES) + (@current_diagnostics || [])
     items = [{ 'severity' => 'ok', 'line' => 0, 'message' => @diagnostic_fallback || 'OK' }] if items.empty?
-    update_view(extra.merge('diagnostics' => items))
+    update_view(extra.merge('diagnostics' => items, 'hiddenLogLines' => [logs.length - VISIBLE_RUNTIME_LOG_LINES, 0].max, 'runtimeLogCount' => logs.length))
   end
 
   def record_runtime_events(events)
@@ -51,7 +55,11 @@ class StudioComponent < GamingComponent
     events.each do |event|
       is_error = event['severity'] == 'error'
       has_error ||= is_error
-      @runtime_logs << { 'severity' => is_error ? 'error' : 'info', 'source' => 'runtime', 'line' => 0, 'message' => event['message'] }
+      message = event['message'].to_s
+      lines = message.empty? ? [''] : message.split("\n", -1)
+      lines.each do |line|
+        @runtime_logs << { 'severity' => is_error ? 'error' : 'info', 'source' => 'runtime', 'line' => 0, 'message' => line }
+      end
     end
     extra = has_error ? { 'preview' => translate_ui('実行エラー', 'Runtime error') } : {}
     refresh_diagnostics(extra)
@@ -68,6 +76,10 @@ class StudioComponent < GamingComponent
   def clear_runtime_logs
     @runtime_logs = []
     refresh_diagnostics
+  end
+
+  def download_runtime_logs
+    bridge.downloadRuntimeLog((@runtime_logs || []).map { |item| item['message'] }.join("\n"))
   end
 
   def show_samples
@@ -150,6 +162,10 @@ class StudioComponent < GamingComponent
 
   def render_diagnostics
     tag(:div, id: 'diagnostics-list', class: 'diagnostics-list', role: 'log', 'aria-live' => 'polite') do
+      if state[:ui]['hiddenLogLines'].to_i > 0
+        hidden = state[:ui]['hiddenLogLines']
+        tag(:p, class: 'hint') { translate_ui("古いログ#{hidden}行は非表示です。すべて保存から確認できます。", "#{hidden} older log lines are hidden. Save the full log to view them.") }
+      end
       state[:ui]['diagnostics'].each do |item|
         tag(:div, class: "diagnostic #{item['severity']}") do
           tag(:div, class: 'diagnostic-location') do
@@ -246,6 +262,7 @@ class StudioComponent < GamingComponent
           tag(:div) do
             tag(:h2) { translate_ui('ログ', 'Log') }
           end
+          tag(:button, { "id" => "download-log", "class" => "button button-quiet", "type" => "button", disabled: state[:ui]['runtimeLogCount'].to_i == 0, onclick: -> { download_runtime_logs } }) { translate_ui('すべて保存', 'Save all') }
           tag(:button, { "id" => "clear-log", "class" => "button button-quiet", "type" => "button", onclick: -> { clear_runtime_logs } }) { translate_ui('クリア', 'Clear') }
           tag(:span, { "id" => "save-status", "class" => "muted" }) { state[:ui]["save"] }
         end

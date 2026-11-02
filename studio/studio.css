@@ -79,7 +79,7 @@ h2, h3, p { margin: 0; }
 .preview-frame { display: grid; flex: 1; place-items: center; min-height: 480px; padding: 16px; background: #e4e9cc; }
 #runner { width: 100%; max-width: 560px; height: 560px; border: 0; background: var(--paper); }
 .diagnostics { max-width: 1376px; margin: 0 auto 24px; }
-.diagnostics-heading { background: #eee4c9; }
+.diagnostics-heading { background: #eee4c9; flex-wrap: wrap; }
 .diagnostics-list { min-height: 52px; padding: 12px 18px; }
 .diagnostic { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; padding: 6px 0; color: var(--muted); font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
 .diagnostic > div:last-child { white-space: pre-wrap; }

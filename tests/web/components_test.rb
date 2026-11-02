@@ -30,7 +30,7 @@ end
 
 class BrowserFixture
   attr_accessor :source, :result, :on_await
-  attr_reader :launches, :downloads, :compiles
+  attr_reader :launches, :downloads, :compiles, :saved_log
 
   def initialize
     @source = 'Game.init'
@@ -59,6 +59,10 @@ class BrowserFixture
   def downloadZip
     @downloads += 1
     2
+  end
+
+  def downloadRuntimeLog(content)
+    @saved_log = content
   end
 
   def sampleStateJson
@@ -130,6 +134,24 @@ class WebComponentsTest < Minitest::Test
     ])
     assert_equal ['before error', 'NoMethodError'], studio.state[:ui]['diagnostics'].map { |item| item['message'] }
     assert_equal '実行エラー', studio.state[:ui]['preview']
+  end
+
+  def test_only_recent_log_lines_are_displayed_and_all_can_be_saved
+    studio = StudioUnderTest.new
+    lines = 250.times.map { |i| "line #{i}" }
+    studio.record_runtime_output(lines)
+    studio.record_runtime_error("error first\nerror second")
+    studio.record_runtime_output([''])
+    assert_equal 53, studio.state[:ui]['hiddenLogLines']
+    assert_equal 253, studio.state[:ui]['runtimeLogCount']
+    assert_equal 200, studio.state[:ui]['diagnostics'].length
+    assert_equal 'line 53', studio.state[:ui]['diagnostics'].first['message']
+    assert_equal '', studio.state[:ui]['diagnostics'].last['message']
+    studio.download_runtime_logs
+    assert_equal (lines + ['error first', 'error second', '']).join("\n"), studio.bridge.saved_log
+    studio.clear_runtime_logs
+    assert_equal 0, studio.state[:ui]['runtimeLogCount']
+    assert_equal 0, studio.state[:ui]['hiddenLogLines']
   end
 
   def test_failed_build_keeps_the_previous_game_and_releases_controls
