@@ -22,6 +22,12 @@ function createStudioBridge() {
   const cursorPosition = document.getElementById('cursor-position');
   const runner = document.getElementById('runner');
   const pixelDialog = document.getElementById('pixel-dialog');
+  const colorDialog = document.getElementById('color-dialog');
+  const colorPicker = document.getElementById('color-picker');
+  const colorHex = document.getElementById('color-hex');
+  const colorResult = document.getElementById('color-rgb565');
+  const colorStatus = document.getElementById('color-status');
+  const copyColorButton = document.getElementById('copy-rgb565');
   const sampleDialog = document.getElementById('sample-dialog');
   const keyDialog = document.getElementById('key-dialog');
   let waitingForKey = null;
@@ -44,6 +50,20 @@ function createStudioBridge() {
     runner.contentWindow?.postMessage({ type: 'studio-keymap-changed' }, location.origin);
   }
   keyDialog.addEventListener('close', () => { waitingForKey = null; });
+
+  function updateColor(value, fromPicker = false) {
+    const converted = window.StudioRGB565.fromHex(value);
+    colorHex.setAttribute('aria-invalid', String(!converted));
+    colorResult.value = converted || '';
+    copyColorButton.disabled = !converted;
+    colorStatus.textContent = converted ? '' : t('RGBは6桁の16進数で入力してください。', 'Enter a six-digit RGB hex code.');
+    if (converted) {
+      if (fromPicker) colorHex.value = value;
+      else colorPicker.value = '#' + value.replace('#', '');
+    }
+  }
+  colorPicker.addEventListener('input', () => updateColor(colorPicker.value, true));
+  colorHex.addEventListener('input', () => updateColor(colorHex.value.trim()));
 
   const state = {
     projectName: 'my-game', assets: new Map(), lastBuild: null, pendingRun: null,
@@ -371,6 +391,19 @@ function createStudioBridge() {
     launch() { if (state.lastBuild) launchPreview(state.lastBuild.bytes); },
     downloadZip,
     goToLocation,
+    openColorTool() { releaseKeys(); updateColor(colorHex.value.trim()); if (!colorDialog.open) colorDialog.showModal(); },
+    closeColorTool() { colorDialog.close(); },
+    async copyColor() {
+      try {
+        if (!colorResult.value || !navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
+        await navigator.clipboard.writeText(colorResult.value);
+        colorStatus.textContent = t('コピーしました。', 'Copied.');
+      } catch (_) {
+        colorResult.focus();
+        colorResult.select();
+        colorStatus.textContent = t('値を選択しました。コピーしてお使いください。', 'Value selected. Copy it to use it.');
+      }
+    },
     openSource() { sourceFile.click(); },
     async changeLanguage() {
       clearTimeout(state.saveTimer);
@@ -472,7 +505,7 @@ function createStudioBridge() {
   }, true);
   window.addEventListener('keydown', (event) => {
     if ((event.key === 'Enter' || event.key === ' ') && event.target?.matches?.('button, a')) return;
-    if (keyDialog.open || pixelDialog.open || sampleDialog.open || isTypingTarget(event.target) || event.ctrlKey || event.metaKey || event.altKey || !window.StudioKeys.buttonForKey(event.key)) return;
+    if (keyDialog.open || pixelDialog.open || sampleDialog.open || colorDialog.open || isTypingTarget(event.target) || event.ctrlKey || event.metaKey || event.altKey || !window.StudioKeys.buttonForKey(event.key)) return;
     event.preventDefault();
     const key = window.StudioKeys.normalize(event.key);
     heldKeys.set(event.code || key, key);

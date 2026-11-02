@@ -66,6 +66,11 @@ h2, h3, p { margin: 0; }
 .sample-body { display: grid; gap: 16px; padding: 20px; }
 .sample-body .hint { margin: 0; }
 .sample-item { width: 100%; text-align: left; }
+.color-dialog { max-height: calc(100vh - 32px); overflow: auto; }
+.color-fields, .color-result { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 12px; font-weight: 700; }
+.color-fields input[type="color"] { width: 54px; height: 40px; padding: 2px; border: 2px solid var(--line); background: var(--panel); }
+.color-fields input[type="text"], .color-result input { width: 112px; padding: 9px; border: 2px solid var(--line); border-radius: 0; background: #fffdf5; color: var(--ink); font: 14px var(--mono); }
+.color-fields input[aria-invalid="true"] { border-color: var(--red); }
 .key-dialog { max-height: calc(100vh - 32px); overflow: auto; }
 .key-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .key-binding { display: flex; justify-content: space-between; align-items: center; gap: 6px; text-align: left; }

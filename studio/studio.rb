@@ -175,6 +175,7 @@ class StudioComponent < GamingComponent
                 tag(:h3) { translate_ui('素材', 'Assets') }
               end
               tag(:button, { "id" => "open-pixel-editor", "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.openPixel } }) { translate_ui('ドット絵', 'Pixel art') }
+              tag(:button, { "id" => "open-color-tool", "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.openColorTool } }) { translate_ui('色変換', 'Color converter') }
               tag(:label, { "class" => "button button-quiet upload-label" }) do
                 tag(:span) { translate_ui('素材を追加', 'Add assets') }
                 tag(:input, { "id" => "asset-files", "class" => "file-input", "type" => "file", "accept" => ".png,.raw,.wav,.pbf", "multiple" => true, "aria-label" => translate_ui('素材を追加', 'Add assets'), onchange: -> { bridge.importAssets } })
@@ -214,6 +215,28 @@ class StudioComponent < GamingComponent
       tag(:footer, { "class" => "footer" }) do
         tag(:a, { "href" => "../docs/hardware.md" }) { translate_ui('実機であそぶ', 'Play on hardware') }
         tag(:a, { "href" => "../emulator/", "target" => "_blank", "rel" => "noreferrer" }) { translate_ui('ゲーム一覧', 'Games') }
+      end
+      tag(:dialog, { "id" => "color-dialog", "class" => "sample-dialog color-dialog", "aria-labelledby" => "color-title" }) do
+        tag(:header, { "class" => "panel-heading" }) do
+          tag(:h2, { "id" => "color-title" }) { translate_ui('色をRGB565に変換', 'Convert color to RGB565') }
+          tag(:button, { "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.closeColorTool } }) { translate_ui('閉じる', 'Close') }
+        end
+        tag(:div, { "class" => "sample-body" }) do
+          tag(:p, { "class" => "hint" }) { translate_ui('色を選ぶか、RGBのカラーコードを入力してください。', 'Pick a color or enter an RGB hex code.') }
+          tag(:div, { "class" => "color-fields" }) do
+            tag(:label, { "for" => "color-picker" }) { translate_ui('色', 'Color') }
+            tag(:input, { "id" => "color-picker", "type" => "color", "value" => "#cd654e" })
+            tag(:label, { "for" => "color-hex" }) { 'RGB' }
+            tag(:input, { "id" => "color-hex", "type" => "text", "value" => "#cd654e", "maxlength" => "7", "spellcheck" => "false", "autocomplete" => "off", "aria-describedby" => "color-status" })
+          end
+          tag(:div, { "class" => "color-result" }) do
+            tag(:label, { "for" => "color-rgb565" }) { 'RGB565' }
+            tag(:input, { "id" => "color-rgb565", "type" => "text", "readonly" => true, "value" => "0xCB29" })
+            tag(:button, { "id" => "copy-rgb565", "class" => "button button-quiet", "type" => "button", onclick: -> { bridge.copyColor } }) { translate_ui('コピー', 'Copy') }
+          end
+          tag(:p, { "id" => "color-status", "class" => "hint", "role" => "status", "aria-live" => "polite" })
+          tag(:p, { "class" => "hint" }) { translate_ui('スプライトでは 0xF81F が透明色として扱われます。', 'Sprites treat 0xF81F as transparent.') }
+        end
       end
       tag(:dialog, { "id" => "sample-dialog", "class" => "sample-dialog", "aria-labelledby" => "sample-title" }) do
         tag(:header, { "class" => "panel-heading" }) do
