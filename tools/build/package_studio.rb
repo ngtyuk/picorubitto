@@ -36,7 +36,7 @@ files = %w[
   studio/vendor/prism/prism-clike.min.js studio/vendor/prism/prism-ruby.min.js
   studio/vendor/marked/marked.umd.js studio/vendor/marked/LICENSE.md docs/api-reference.md
   studio/runtime/mrbc.js studio/runtime/mrbc.wasm studio/runtime/version.json
-  web/boot.js web/components.rb web/start.rb web/picorubitto-console.svg web/picorubitto-favicon.svg
+  web/boot.js web/components.rb web/start.rb web/picorubitto-console.svg web/picorubitto-favicon-shell.svg
   emulator/emulator.js emulator/game_adapter.rb emulator/system-screen.js
   emulator/emulator.css emulator/theme.css
   emulator/picoruby/init.iife.js emulator/picoruby/picoruby.js
