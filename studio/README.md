@@ -31,10 +31,11 @@ Cloudflareへの公開用ファイルはビルド後に生成します。
 
 ```sh
 git clone https://github.com/ngtyuk/picocraft.git /path/to/picocraft
-# Sunny Trail Adventureのゲームディレクトリも別途用意する。
+# 2D game exampleとSky Interceptのゲームディレクトリも別途用意する。
 ruby tools/build/package_studio.rb \
   --sample 'picocraft,Picocraft,/path/to/picocraft' \
-  --sample 'sunny-trail,Sunny Trail Adventure,/path/to/sunny-trail'
+  --sample 'sunny-trail,2D game example,/path/to/sunny-trail' \
+  --sample 'sky-intercept,Sky Intercept,/path/to/sky-intercept'
 npx wrangler deploy
 ```
 
@@ -51,7 +52,7 @@ PicoRuby 4.0.5の`RITE0400`形式でROMを生成します。
 
 1. 左側の`main.rb`にRubyコードを書きます。キーワード・文字列・数値・コメントを色分けして表示します。
    初回は`Hello, world!`を表示するサンプルが入っています。
-   公開版では「サンプルゲーム」から「Picocraft」や「Sunny Trail Adventure」を選ぶと、確認後にコードと素材を読み込めます。現在のプロジェクトは置き換わります。
+   公開版では「サンプルゲーム」から「Picocraft」「2D game example」「Sky Intercept」を選ぶと、確認後にコードと素材を読み込めます。現在のプロジェクトは置き換わります。
    サンプルを開くリンクも利用できます。例えば、`https://picorubitto.ngt-y.uk/studio/?sample=picocraft`で
    Picocraftを開きます。既存のプロジェクトがある場合は、置き換える前に確認します。
 2. 編集を止めると構文チェックが自動実行されます。エラーの行・列をクリックすると該当位置へ移動できます。
