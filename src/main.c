@@ -9,6 +9,7 @@
 
 #include "estalloc_mruby.h"
 #include "game_platform.h"
+#include "game_clock.h"
 #include "version.h"
 
 /* The Prism compiler owns this bridge pointer in PicoRuby 4.x. */
@@ -31,11 +32,13 @@ main(void)
   size_t rom_size = 0;
   int result = 0;
 
+  game_clock_init();
   stdio_init_all();
   /* Give a USB CDC serial monitor time to open before the boot log. */
   sleep_ms(2000);
   printf("PicoRubitto boot\n");
   printf("PicoRuby %s\n", picorb_version_with_build_info());
+  game_clock_report();
   printf("VM: profile=%s scope=picoruby-mruby\n", GAME_VM_PROFILE);
   printf("STACK: core0=%u core1=%u bytes\n",
          (unsigned)PICO_STACK_SIZE, (unsigned)PICO_CORE1_STACK_SIZE);

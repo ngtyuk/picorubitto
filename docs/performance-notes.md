@@ -25,6 +25,50 @@ APIの引数と上限は[APIリファレンス](api-reference.md)、メモリと
 パネルや配線で表示が不安定な場合は`--tft-clock 40`などで下げて確認します。
 `Game.tick(60)`の60は目標FPSです。実測FPSは統合ROMかprofilingログで確認します。
 
+## WeActの段階的オーバークロック検証
+
+`engine --clock-profile`はWeAct RP2350B Core専用の設定です。既定の`stock`は
+SDKの150MHz・電圧・PSRAM設定を維持します。150MHz超はRP2350の公式仕様外です。
+2026-11-13、利用者のWeAct実機で300MHz検証UF2の正常動作とゲーム性能の改善が報告されました。
+FPSや試験時間・温度の数値は未取得で、他の個体・電源・ゲームの安定性を保証するものではありません。
+300MHzのクロック・電圧・メモリ設定は、この検証UF2から引き継いでいます。
+
+| プロファイル | CPU | コア電圧の下限 | Flash / PSRAM | clk_peri | TFT実効値（75MHz要求） |
+| --- | --- | --- | --- | --- | --- |
+| `weact-150` | 150MHz | 1.10V | 75MHz | 150MHz | 75MHz |
+| `weact-200` | 200MHz | 1.15V | 約66.67MHz | 100MHz | 50MHz |
+| `weact-250` | 250MHz | 1.20V | 62.5MHz | 125MHz | 62.5MHz |
+| `weact-300` | 300MHz | 1.25V | 75MHz | 150MHz | 75MHz |
+
+200MHz、250MHzを先に評価し、300MHzは最後の候補とします。FlashとPSRAMは75MHz以下、
+SPI/UARTの基準`clk_peri`は150MHz以下に抑えます。USBとADCは48MHzのままです。
+SDKの電圧上限解除は使いません。電圧はSDKが起動時に確保する下限なので、高い電圧が
+残る温リセットでは設定値と一致しない場合があります。比較時はUSB等の電源を外し、
+冷間起動してください。`vreg_sel`の11／12／13／14は、それぞれ1.10／1.15／1.20／1.25Vの
+設定コードです。電圧の実測値ではありません。
+
+各WeActプロファイルは起動時に`CLOCK:`へクロック設定・QMI分周値を出力します。
+PSRAM全域検査は既定で無効です。`--clock-diagnostics`を追加した場合だけ、VMやアセットを
+確保する前に8MiB全域のPSRAMへアドレス由来のパターンとその反転を順に書いて照合します。
+キャッシュを通さない領域を使い、`CLOCK TEST: pass=1 OK`、`pass=2 OK`、`PASS`を確認します。
+通常のロゴ表示まで時間が延びます。FAILの場合は起動を中止します。起動検査のPASSだけで
+長時間の安定性は判定しません。診断の有無でクロック・電圧・メモリの設定は変わりません。
+`stock`と`--clock-diagnostics`の組み合わせは拒否します。
+
+比較では同じROM、SD、配線、電源、音量、VM最適化を使います。`--vm-opt size`のまま
+CPUクロックだけを段階的に選び、`--profiling`を追加します。200／250MHzではFlash・PSRAM・
+TFTも表の値へ変化するため、FPSの伸びをCPU性能だけの差として解釈しないでください。
+150と300は外部メモリとTFTの周波数が揃います。まずPERF / VM、その後2D・3D・音声併用を
+比べます。TFTの実効値は`TFT: ... actual=... kHz`で確認できます。SDの25MHz要求も
+250MHz段階では約20.83MHzとなり、ほかの段階は25MHzです。`SD: ready ... actual=... kHz`も
+記録し、ROMやアセットのロード時間を比較するときに区別します。
+
+根拠となる一次資料は[RP2350データシート](https://datasheets.raspberrypi.com/rp2350/rp2350-datasheet.pdf)、
+使用中のPico SDK 2.3.1の`runtime_init_clocks.c`、`hardware_psram/psram.c`、
+`boot2_w25q080.S`です。電圧の候補は別ボードの
+[PicoADK RP2350設定例](https://github.com/DatanoiseTV/PicoADK-Firmware-Template/blob/main/docs/OVERCLOCKING.md)
+も参考にしていますが、WeActでの実測結果ではありません。
+
 ## メモリ配置
 
 Core 0のスタックはSRAMに16KiB、Core 1は4KiBを予約します。VMヒープはPSRAMの先頭4MiBを

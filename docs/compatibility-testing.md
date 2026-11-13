@@ -63,6 +63,24 @@ WeAct用は`engine --board weact_studio_rp2350b_core`でビルドします。
 起動ログの`PSRAM: available=1 size=8388608`と`PSRAM: pattern test OK`も確認します。
 UF2、ROM、素材は同じソースから生成した組み合わせを使い、生成物はコミットしません。
 
+### WeActクロック候補の評価
+
+手順は[実機ガイド](hardware.md#オーバークロック検証と復旧)、候補値は
+[性能メモ](performance-notes.md#weactの段階的オーバークロック検証)を参照してください。
+`ruby tests/native/clock_profile_test.rb`はプロファイルのPLL設定、電圧選択、外部メモリ上限、
+SDK子ディレクトリへの定義の継承、診断の有無で設定が変わらないことと、不正なボード／
+プロファイル／診断指定の拒否を検査します。`python3 tests/native/clock_runtime_regression.py`は
+実際のCモジュールを模擬SDKでコンパイルし、全域検査を無効にしても周辺クロック制限と
+起動ログが適用されること、USB/ADCを変更しないことを確認します。
+UF2ビルドとWASM契約の合格は、オーバークロックの安定性の判定とは別です。
+
+各段階で冷間起動ログのCPU・周辺クロック・電圧設定コード・QMI分周を記録し、
+`--clock-diagnostics`付きならPSRAM全域検査も確認します。
+同じ統合ROMでRUN ALLとPERF / VM、2D、3D、音声併用を確認します。I2Sでは
+`stalls`、`late_irqs`、`late_refills`と実際の聴取も比較します。実効TFTクロックが変わる
+中間段階のFPSは、CPUだけの速度差として扱いません。各候補の結果には実行時間と電源条件を
+添え、未実機確認の候補を安定版とは呼びません。
+
 ### 操作と判定
 
 - 上下で項目を選び、Aで実行します。

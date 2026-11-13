@@ -32,6 +32,7 @@ harness = r'''
 #include "game_platform.h"
 #include "estalloc.h"
 static void game_audio_dial_poll(void) {}
+static void game_battery_poll(void) {}
 typedef unsigned int uint;
 static uint32_t save_and_disable_interrupts(void) { return 0; }
 static void restore_interrupts(uint32_t state) { (void)state; }

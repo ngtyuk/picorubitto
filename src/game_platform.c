@@ -1,4 +1,5 @@
 #include "game_platform.h"
+#include "game_clock.h"
 #include "game_audio_dial.h"
 #include "game_boot_chime.h"
 #include "game_system_palette.h"
@@ -1529,7 +1530,8 @@ sd_init(void)
     return false;
   }
   sd_ready = true;
-  printf("SD: ready at 25 MHz\n");
+  printf("SD: ready requested=25 MHz actual=%lu kHz\n",
+         (unsigned long)(spi_get_baudrate(SD_SPI) / 1000u));
   return true;
 }
 
@@ -1797,6 +1799,9 @@ game_platform_boot(void)
     return false;
   }
 
+  if (!game_clock_check_psram()) {
+    return false;
+  }
   volatile uint32_t *first = (volatile uint32_t *)psram_base;
   volatile uint32_t *last = (volatile uint32_t *)(psram_base + GAME_PSRAM_TOTAL_BYTES - 4);
   *first = 0x5049434fu;

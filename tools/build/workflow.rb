@@ -75,6 +75,8 @@ def engine_workflow(argv)
     arm_toolchain: DEFAULT_ARM_TOOLCHAIN,
     build_type: 'Release',
     vm_opt: 'size',
+    clock_profile: 'stock',
+    clock_diagnostics: false,
     audio_output: 'pwm',
     audio_max_gain: 100,
     i2s_bclk: 26,
@@ -110,6 +112,13 @@ def engine_workflow(argv)
     opts.on('--volume-knob', 'ADC2/GP42 master volume (Pico Plus header GP28)') { options[:volume_knob] = true }
     opts.on('--i2s-data GPIO', Integer, 'I2S data pin (default: 28; with volume knob: 17)') { |value| options[:i2s_data] = value }
     opts.on('--profiling', 'build firmware with USB serial frame profiling') { options[:profiling] = true }
+    opts.on('--clock-profile PROFILE', %w[stock weact-150 weact-200 weact-250 weact-300],
+            'WeAct clock/voltage profile (default: stock at 150 MHz)') do |value|
+      options[:clock_profile] = value
+    end
+    opts.on('--clock-diagnostics', 'check the full scratch PSRAM before boot (requires a WeAct clock profile)') do
+      options[:clock_diagnostics] = true
+    end
     opts.on('--tft-clock MHZ', Integer, 'set TFT SPI clock in MHz') { |value| options[:tft_clock_mhz] = value }
     opts.on('--tft-stripe-rows ROWS', Integer, 'set the SRAM TFT transfer stripe height') do |value|
       options[:tft_stripe_rows] = value
@@ -132,6 +141,13 @@ def engine_workflow(argv)
     end
   end
   parser.parse!(argv)
+  if options[:clock_profile] != 'stock'
+    fail_with('--clock-profile requires WeAct RP2350B Core') unless options[:board] == 'weact_studio_rp2350b_core'
+    fail_with('--clock-profile requires an RP2350 firmware build') unless options[:firmware]
+  end
+  if options[:clock_diagnostics] && options[:clock_profile] == 'stock'
+    fail_with('--clock-diagnostics requires a WeAct --clock-profile')
+  end
   fail_with('--audio-max-gain must be an integer from 0 to 100') unless (0..100).cover?(options[:audio_max_gain])
   fail_with('--battery-warning requires WeAct RP2350B Core') if options[:battery_warning] && options[:board] != 'weact_studio_rp2350b_core'
   default_i2s_data = options[:volume_knob] ? 17 : 28
@@ -178,6 +194,8 @@ def engine_workflow(argv)
   else
     firmware_suffix = options[:board] == DEFAULT_PICO_BOARD ? '' : "-#{options[:board].tr('_', '-')}"
     firmware_suffix += '-vm-speed' if options[:vm_opt] == 'speed'
+    firmware_suffix += "-#{options[:clock_profile]}" unless options[:clock_profile] == 'stock'
+    firmware_suffix += '-clock-check' if options[:clock_diagnostics]
     firmware_suffix += '-audio-i2s' if options[:audio_output] == 'i2s'
     firmware_suffix += '-battery-warning' if options[:battery_warning]
     firmware_suffix += '-volume-knob' if options[:volume_knob]
@@ -248,6 +266,8 @@ def engine_workflow(argv)
     ]
     cmake_args.concat([
       "-DGAME_ENABLE_PROFILING=#{options[:profiling] ? 'ON' : 'OFF'}",
+      "-DGAME_CLOCK_PROFILE=#{options[:clock_profile]}",
+      "-DGAME_CLOCK_DIAGNOSTICS=#{options[:clock_diagnostics] ? 'ON' : 'OFF'}",
       "-DGAME_BATTERY_WARNING=#{options[:battery_warning] ? 'ON' : 'OFF'}",
       "-DGAME_AUDIO_VOLUME_KNOB=#{options[:volume_knob] ? 'ON' : 'OFF'}",
       "-DGAME_AUDIO_MAX_GAIN=#{options[:audio_max_gain]}",
@@ -283,6 +303,8 @@ def engine_workflow(argv)
   puts "\nEngine workflow complete."
   puts "Pico board: #{options[:board]}" if options[:firmware]
   puts "VM core: #{options[:vm_opt]} (#{options[:vm_opt] == 'speed' ? '-O2' : '-Os'})" if options[:firmware]
+  puts "Clock profile: #{options[:clock_profile]}" if options[:firmware]
+  puts "Clock diagnostics: #{options[:clock_diagnostics] ? 'on' : 'off'}" if options[:firmware]
   puts "Firmware: #{File.join(firmware_dir, 'pico_ruby_gaming.uf2')}" if options[:firmware]
   puts "WASM runtime: #{File.join(ROOT, 'emulator', 'picoruby')}" if options[:wasm] && options[:emulator]
 end

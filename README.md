@@ -157,6 +157,22 @@ ruby tools/build/workflow.rb engine --board weact_studio_rp2350b_core
 
 Its UF2 is written to
 `build/firmware-release-weact-studio-rp2350b-core/pico_ruby_gaming.uf2`.
+
+To opt into a 300 MHz WeAct build, add a clock profile:
+
+```sh
+ruby tools/build/workflow.rb engine --board weact_studio_rp2350b_core \
+  --clock-profile weact-300
+```
+
+The default remains 150 MHz. Profiles `weact-150`, `weact-200`, `weact-250`, and
+`weact-300` select clock, voltage, and memory timing together; 300 MHz uses a
+1.25 V core-voltage minimum and caps Flash/PSRAM at 75 MHz. Add
+`--clock-diagnostics` for a full PSRAM boot check; it is off by default.
+Above 150 MHz is outside the RP2350 specification. See the
+[clock build guide](docs/agent-development.md#weactを300mhzでビルドするとき) and
+[hardware validation and recovery](docs/hardware.md#オーバークロック検証と復旧).
+
 To use Studio after either hardware build, also run
 `ruby tools/build/workflow.rb studio`.
 

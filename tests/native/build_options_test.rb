@@ -21,7 +21,8 @@ class BuildOptionsTest < Minitest::Test
     output, status = Open3.capture2('ruby', WORKFLOW, 'engine', '--help')
     assert status.success?
     %w[--board --audio-output --audio-max-gain --volume-knob --i2s-bclk
-       --i2s-data --vm-opt --tft-clock --profiling --firmware-only --wasm-only].each do |option|
+       --i2s-data --vm-opt --tft-clock --profiling --clock-profile --clock-diagnostics
+       --firmware-only --wasm-only].each do |option|
       assert_includes output, option
     end
   end

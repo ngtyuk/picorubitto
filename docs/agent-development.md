@@ -44,6 +44,8 @@ WeActでI2SのDINをGP28、音量ダイヤルをGP42、出力上限を50%にす�
 | ビルド対象 | `--firmware-only`、`--wasm-only`、`--no-emulator-runtime` |
 | パス | `--picoruby-root`、`--build-root`、`--firmware-dir`、`--arm-toolchain` |
 | 調査 | `--debug`、`--profiling` |
+| WeActクロック | `--clock-profile stock\|weact-150\|weact-200\|weact-250\|weact-300`。既定はstock（150MHz） |
+| 起動時のPSRAM全域検査 | `--clock-diagnostics`。WeActクロック指定時だけ追加可能。既定は無効 |
 | 表示調整 | `--tft-clock`、`--tft-stripe-rows`、`--dirty-merge-extra` |
 
 SRAMフレームバッファ、背景、差分転送、Core 1 presenterと速度重視Cコンパイル、
@@ -84,6 +86,54 @@ SRAMフレームバッファ、背景、差分転送、Core 1 presenterと速度
 短時間の切り分けには`ruby tools/build/workflow.rb engine --firmware-only`または
 `ruby tools/build/workflow.rb engine --wasm-only`を使えますが、
 API変更の完了確認には使いません。
+
+## WeActを300MHzでビルドするとき
+
+`--clock-profile weact-300`で、300MHz・電圧下限1.25V・Flash/PSRAM上限75MHzを選択できます。
+クロックを省略した通常ビルドは従来の150MHzです。I2SのDIN=GP28、ダイヤル、
+最大ゲイン50%、電池警告を組み合わせる例です。
+
+```sh
+ruby tools/build/workflow.rb engine --board weact_studio_rp2350b_core \
+  --clock-profile weact-300 --audio-output i2s --volume-knob \
+  --i2s-data 28 --audio-max-gain 50 --battery-warning
+```
+
+UF2は`build/firmware-release-weact-studio-rp2350b-core-weact-300-audio-i2s-battery-warning-volume-knob-audio-gain50-bclk26-data28/pico_ruby_gaming.uf2`、
+WASMは`emulator/picoruby/`へ生成します。起動ログにクロック設定を表示し、通常の起動時間を
+保つためPSRAM全域検査は行いません。検査する場合は`--clock-diagnostics`を追加します。
+既定のUF2出力先にも`-clock-check`が加わり、通常のクロック指定版とは区別されます。
+
+## WeActのクロックを段階的に検証するとき
+
+候補値と比較上の注意は[性能メモ](performance-notes.md#weactの段階的オーバークロック検証)、
+実機の操作と復旧は[実機ガイド](hardware.md#オーバークロック検証と復旧)を参照します。
+まず同じ配線の`stock`をUF2・WASMの両方でビルドし、復旧用として保存します。
+I2SのDIN=GP28、ダイヤル、最大ゲイン50%、電池警告ありの例です。
+
+```sh
+ruby tools/build/workflow.rb engine --board weact_studio_rp2350b_core \
+  --audio-output i2s --volume-knob --i2s-data 28 --audio-max-gain 50 \
+  --battery-warning --profiling --firmware-dir build/clock-ladder/firmware-stock
+```
+
+続けて、変更範囲を実機クロックに限定した各候補を生成します。共通VMは同じsize設定で、
+WASMは上の完全ビルドの出力を使います。各UF2・ELF・mapは指定した別ディレクトリに残ります。
+
+```sh
+for mhz in 150 200 250 300; do
+  ruby tools/build/workflow.rb engine --board weact_studio_rp2350b_core \
+    --audio-output i2s --volume-knob --i2s-data 28 --audio-max-gain 50 \
+    --battery-warning --profiling --clock-profile "weact-$mhz" --clock-diagnostics \
+    --firmware-only --firmware-dir "build/clock-ladder/firmware-$mhz" || break
+done
+ruby tools/build/workflow.rb checks
+ruby tests/native/clock_profile_test.rb
+```
+
+`--clock-profile`を省略した通常ビルドは従来どおりです。WeActプロファイルは他のボードと
+`--wasm-only`では拒否します。`--firmware-dir`を省略すると、通常の出力先に
+`-weact-200`等のプロファイル名が加わり、通常版とは分離されます。
 
 ## VM最適化の比較をするとき
 

@@ -19,6 +19,26 @@
 依存バージョンとROM形式は[依存バージョン](dependencies.md)で管理します。PicoRuby 4.0.5の
 mruby構成を実機・WASM・ホスト/ブラウザコンパイラで揃えます。
 
+## 実機のクロックプロファイル
+
+`cmake/clock_profile.cmake`は`pico_sdk_init()`より前に起動クロック・電圧下限・Flash分周・
+PSRAM上限を指定します。別ターゲットのboot stage 2にもFlash設定を渡し、
+SDKのクロック初期化が電圧を確保してからCPUを高速化し、その後PSRAMを初期化します。
+起動後にPSRAMを使用したままシステムクロックを切り替える方式は使いません。
+
+既定の`stock`はSDK設定を維持します。WeActプロファイルでは、`src/game_clock.c`が
+`main`の先頭でSPI/UART用`clk_peri`を150MHz以下へ分周し、その後にUSB stdio・ゲームの
+周辺機器を開始します。I2SやPWMの分周は初期化時のクロックから求めます。
+PSRAMの75MHz上限に対する分周・受信遅延・CSタイミングはSDKが起動時に計算します。
+
+`--clock-diagnostics`を明示したビルドだけが、USBログの開始後、フレームバッファ・VM・
+アセット・Core 1を使う前にPSRAMの8MiB全域を非キャッシュ領域から破壊的に検査します。
+`GAME_CLOCK_CUSTOM`が周辺クロック設定とログを、`GAME_CLOCK_DIAGNOSTICS`が全域検査を
+それぞれ制御し、診断を無効にしてもクロック設定と分周は適用されます。この領域は検査時点で
+ゲーム用の未使用領域であり、静的なPSRAM変数を追加する場合は検査範囲も見直す必要が
+あります。既定ビルドでは検査を行いません。`Game` APIやWASMの実行速度には影響しません。
+候補値と制約は[性能メモ](performance-notes.md#weactの段階的オーバークロック検証)を参照してください。
+
 ## RP2350のVM最適化プロファイル
 
 TFT初期化後、SD／ROMに依存しない起動画面を描画します。起動音は内蔵の200ms PCMを

@@ -99,6 +99,7 @@ include("${PICO_SDK_PATH}/external/pico_sdk_import.cmake")
 
 project(pico_ruby_gaming C CXX ASM)
 
+include(cmake/clock_profile.cmake)
 pico_sdk_init()
 
 set(FAT_ROOT "${CMAKE_CURRENT_LIST_DIR}/deps/picoruby-fatfs/mrbgems/picoruby-filesystem-fat"
@@ -116,6 +117,7 @@ set(PICORUBY_PLATFORM_SOURCES
 
 add_executable(pico_ruby_gaming
   src/main.c
+  src/game_clock.c
   src/game_platform.c
   src/game_audio_dial.c
   src/fat_support.c
