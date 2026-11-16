@@ -89,9 +89,14 @@ gemの一覧は`tools/runtime_profile.rb`で管理します。
 `mruby-string-ext`、`mruby-metaprog`も両実行先へ組み込みます。実機の`minimum`と
 WASMの`stdlib`の差に依存せず、ゲーム用Ruby拡張の最低限の契約を明示します。
 WASMの`stdlib`はブラウザUIの依存関係のため維持しますが、その全機能を実機で保証する
-ものではありません。ホストの最小構成テストも同じ`RUBY_GEMS`を使います。
+ものではありません。ホストの最小構成テストも同じ`RUBY_GEMS`と共通gemを使います。
 `gaming-build.json`には`tools/runtime_profile.rb`のハッシュも含め、拡張一覧だけの変更でも
 実機ライブラリを作り直します。
+
+標準出力の`Kernel#puts`／`Kernel.puts`は共通gemの`src/console.c`で提供します。
+文字列と改行を既存の`Kernel.print`へ渡し、実機のstdio／USBとWASMの標準出力の転送経路を
+利用します。WASMのmruby-io読込後にも共通実装を登録し、両実行先で同じ文字列化・改行・
+配列処理を使います。実機へIO／Fileを追加せず、ゲームや計測ROMにも代替定義を埋め込みません。
 
 ゲームが使う共通の契約は次のとおりです。
 

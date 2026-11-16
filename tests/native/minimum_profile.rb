@@ -9,4 +9,5 @@ MRuby::Build.new('minimum-profile') do |conf|
                             MRB_CONSTRAINED_BASELINE_PROFILE=1 PICORB_VM_MRUBY])
   conf.gem core: 'mruby-bin-mruby'
   PicoRubyGaming::RuntimeProfile.add_ruby_gems(conf, MRUBY_ROOT)
+  PicoRubyGaming::RuntimeProfile.add_common_gems(conf, ENV.fetch('GAME_PROJECT_ROOT'))
 end

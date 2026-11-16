@@ -155,7 +155,7 @@ end
 
 # SUITE_INSERTION_POINT
 
-raise 'unexpected IO gem' if HardwareChecks.respond_to?(:puts, true)
+raise 'unexpected IO gem' if Object.const_defined?(:IO)
 raise 'unexpected kernel-ext gem' if HardwareChecks.respond_to?(:caller, true)
 print '[MINIMUM] hardware and Game API are stubbed', "\n"
 audio = HardwareAudio::Player.new

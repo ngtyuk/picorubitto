@@ -10,6 +10,49 @@ def contract_check(condition, message)
   raise "Game API contract failed: #{message}" unless condition
 end
 
+module ConsoleContractModule
+  def self.log
+    puts 'module'
+  end
+end
+
+class ConsoleContractClass
+  def self.log
+    puts 'class'
+  end
+
+  def log
+    puts 'instance'
+  end
+
+  def to_s
+    'object'
+  end
+end
+
+def run_console_output_contract
+  contract_check(respond_to?(:puts, true), 'top-level puts exists')
+  contract_check(ConsoleContractModule.respond_to?(:puts, true), 'module puts exists')
+  contract_check(ConsoleContractClass.respond_to?(:puts, true), 'class puts exists')
+  contract_check(ConsoleContractClass.new.respond_to?(:puts, true), 'instance puts exists')
+  print "[CONSOLE] BEGIN\n"
+  results = [puts('top'), ConsoleContractModule.log, ConsoleContractClass.log,
+             ConsoleContractClass.new.log, Kernel.puts('kernel')]
+  results << puts('already newline' + "\n")
+  results << puts('first', 'second', 42, ConsoleContractClass.new)
+  results << puts("multi\nline")
+  results << puts
+  results << puts('')
+  results << puts(nil)
+  results << puts(['array', ['nested'], []])
+  cycle = []
+  cycle << cycle
+  results << puts(cycle)
+  contract_check(results.all? { |value| value.nil? }, 'puts returns nil')
+  print "[CONSOLE] END\n"
+  true
+end
+
 def contract_byte_string
   # Start with a binary string, including under MRB_UTF8_STRING.
   bytes = 255.chr
@@ -45,6 +88,7 @@ def run_ruby_runtime_contract
   contract_check(object.instance_variable_get(:@month) == 13, 'monthly field update')
   object.instance_variable_set(:@month, snapshot)
   contract_check(object.instance_variable_get(:@month) == 12, 'monthly snapshot restoration')
+  run_console_output_contract
   true
 end
 

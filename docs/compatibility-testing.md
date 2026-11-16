@@ -30,26 +30,33 @@ Ruby拡張の契約には`Integer#chr`、`String#each_char`、`instance_variable
 スナップショット復元を含みます。保存は全256バイトを実際の`Game::Save`へ書き込み、
 読み出し結果を比較します。同じ契約は実機用統合ROMのCOMMON APIでも実行します。
 
+`run_console_output_contract`は、トップレベル、Module／クラスメソッド、インスタンス、
+`Kernel.puts`からログを出します。文字列化、複数引数、改行済み文字列、空行、配列と循環、
+`nil`の戻り値も確認します。ホストとWASMでは実際の標準出力を
+`tests/portable/console_output.txt`とバイト単位で比較し、改行の不足・重複も検出します。
+
 ```sh
 python3 tests/native/minimum_profile_regression.py
+node tests/web/console-output.mjs
 ```
 
-ホストVMも`tools/runtime_profile.rb`の共通Ruby拡張一覧からビルドし、上記の言語契約を実行します。
+ホストVMも`tools/runtime_profile.rb`の共通Ruby拡張と共通gemからビルドし、上記の言語契約を実行します。
+`console-output.mjs`は下記HTTPサーバーから最新WASMを読み、stdoutの実際の書込バイト列を確認します。
+実機のCOMMON APIでも同じログをUSBへ出し、BEGIN〜ENDを基準ファイルと比較できます。
 ホスト側の表示・入力・保存装置は模擬実装で、WASMや実機の保存確認は別途必要です。
 `local-games/machibiyori/`がある場合は、ゲームの既存`tests/spec.rb`を同ホストVMで実行し、
 街名処理・月次の開始／取消・複数月の進行・保存／復元も確認します。例えば次でソースを連結します。
 
 ```sh
-printf '%s\n' 'def puts(message); print message, "\n"; end' > build/tests/machibiyori-spec.rb
 cat local-games/machibiyori/tests/save_fixture.rb local-games/machibiyori/src/model.rb \
-  local-games/machibiyori/tests/spec.rb >> build/tests/machibiyori-spec.rb
+  local-games/machibiyori/tests/spec.rb > build/tests/machibiyori-spec.rb
 build/tests/minimum-profile/minimum-profile/bin/mruby build/tests/machibiyori-spec.rb
 node local-games/machibiyori/tests/wasm_test.mjs
 ```
 
-先頭の`puts`定義は、IOを含まないホストVM上でテストの進捗だけを`print`へ渡します。
-ゲーム本体には追加しません。WASMのゲーム検証にも下記HTTPサーバーを使います。
-ゲームとその検証素材はローカル専用です。
+`puts`のテスト用代替定義は不要です。WASMのゲーム検証にも下記HTTPサーバーを使います。
+ゲームとその検証素材はローカル専用です。既存の計測ROMは再生成せず、
+`node local-games/machibiyori/tests/emulator_test.mjs --hardware-profile --rom`で起動できます。
 
 組み込み英数字・かな・漢字の実機CとブラウザJavaScriptのデータおよびピクセル一致は
 `python3 tests/native/kana_text_regression.py`で検査します。組み込み字形の再生成には

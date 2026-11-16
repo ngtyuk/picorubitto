@@ -1,0 +1,21 @@
+[CONSOLE] BEGIN
+top
+module
+class
+instance
+kernel
+already newline
+first
+second
+42
+object
+multi
+line
+
+
+
+array
+nested
+
+[...]
+[CONSOLE] END

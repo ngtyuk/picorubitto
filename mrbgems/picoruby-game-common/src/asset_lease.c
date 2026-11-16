@@ -1,5 +1,7 @@
 #include <mruby.h>
 
+void game_console_init(mrb_state *mrb);
+
 #if defined(__EMSCRIPTEN__)
 #include <stdint.h>
 #include <emscripten.h>
@@ -50,6 +52,7 @@ lease_id(mrb_state *mrb, mrb_value self)
 void
 mrb_picoruby_game_common_gem_init(mrb_state *mrb)
 {
+  game_console_init(mrb);
 #if defined(__EMSCRIPTEN__)
   struct RClass *game = mrb_define_module_id(mrb, MRB_SYM(Game));
   struct RClass *lease = mrb_define_class_under_id(mrb, game, MRB_SYM(AssetLease), mrb->object_class);
@@ -57,8 +60,6 @@ mrb_picoruby_game_common_gem_init(mrb_state *mrb)
   mrb_define_class_method_id(mrb, lease, MRB_SYM(new), lease_new, MRB_ARGS_NONE());
   mrb_define_method_id(mrb, lease, MRB_SYM(attach), lease_attach, MRB_ARGS_REQ(1));
   mrb_define_method_id(mrb, lease, MRB_SYM(id), lease_id, MRB_ARGS_NONE());
-#else
-  (void)mrb;
 #endif
 }
 

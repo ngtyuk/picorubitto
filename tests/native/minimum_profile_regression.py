@@ -34,7 +34,11 @@ with tempfile.TemporaryDirectory(prefix='gaming-minimum-') as directory:
     source = Path(directory) / 'ruby-runtime.rb'
     source.write_text('HARDWARE_SUITE = true\n' + contract.replace("require 'game'\n", '') +
                       "\nrun_ruby_runtime_contract\nprint '[RUBY RUNTIME] PASS', \"\\n\"\n")
-    subprocess.run([str(output / 'minimum-profile/bin/mruby'), str(source)], check=True)
+    run = subprocess.run([str(output / 'minimum-profile/bin/mruby'), str(source)],
+                         check=True, capture_output=True)
+    expected = (root / 'tests/portable/console_output.txt').read_bytes()
+    assert run.stdout == b'[CONTRACT] common Ruby extensions\n' + expected + b'[RUBY RUNTIME] PASS\n', run.stdout
+    print(run.stdout.decode(), end='')
     for profile, rounds in [('standard', 42), ('comparison', 48)]:
         bundled = f'HARDWARE_PERFORMANCE_PROFILE = "{profile}"\n' + flight + performance + vm_performance + audio
         if profile == 'comparison':

@@ -26,6 +26,11 @@ mruby標準拡張は同ファイルの`RUBY_GEMS`へ追加し、実機・WASM・
 実際の文字列・バイト列・状態更新などの回帰を追加し、
 `python3 tests/native/minimum_profile_regression.py`とWASM契約を確認します。
 
+IO全体を必要としない共通の言語機能は、`picoruby-game-common`にも実装できます。
+`puts`は既存の`Kernel.print`を使い、ホストVMも同じ共通gemを組み込みます。
+ログの契約ではメソッドの存在だけでなく、`tests/portable/console_output.txt`を基準に、
+ホストとWASMの実際の標準出力をバイト単位で比較します。
+
 アセットの寿命を管理する共通処理もこの層に置きます。WASMの内部型`Game::AssetLease`は
 `picoruby-game-common/src/asset_lease.c`で数値IDを所有し、Ruby GCからJSの解放処理を呼びます。
 アセット本体をブリッジの永続参照表へ渡さず、公開するRubyのクラスとAPIは両環境で揃えます。
