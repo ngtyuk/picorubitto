@@ -36,7 +36,7 @@ ruby tools/build/workflow.rb studio
 ruby tools/build/workflow.rb game path/to/game
 ```
 
-ホストコンパイラは`build/mruby/mrbc/default/bin/mrbc`、Studio用は
+ホストコンパイラは`build/mruby-vm-speed/mrbc/default/bin/mrbc`、Studio用は
 `studio/runtime/mrbc.js`と`mrbc.wasm`です。ROM生成では`--mrbc PATH`で指定できます。
 従来の`--picorbc`はコマンド引数の別名として受け付けます。
 

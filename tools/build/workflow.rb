@@ -13,7 +13,7 @@ end
 
 ROOT = File.expand_path('../..', __dir__)
 DEFAULT_PICORUBY_ROOT = PicoRubyGaming::Dependencies.directory('picoruby')
-DEFAULT_MRBC = File.join(ROOT, 'build', 'mruby', 'mrbc', 'default', 'bin', 'mrbc')
+DEFAULT_MRBC = PicoRubyGaming::VMProfile.host_compiler(File.join(ROOT, 'build'))
 DEFAULT_PICO_BOARD = 'pimoroni_pico_plus2_rp2350'
 SUPPORTED_PICO_BOARDS = [
   DEFAULT_PICO_BOARD,
@@ -74,7 +74,7 @@ def engine_workflow(argv)
     firmware_dir: nil,
     arm_toolchain: DEFAULT_ARM_TOOLCHAIN,
     build_type: 'Release',
-    vm_opt: 'size',
+    vm_opt: nil,
     clock_profile: 'stock',
     clock_diagnostics: false,
     audio_output: 'pwm',
@@ -104,7 +104,7 @@ def engine_workflow(argv)
     opts.on('--arm-toolchain PATH', 'arm-none-eabi/bin directory') { |value| options[:arm_toolchain] = value }
     opts.on('--debug', 'build a Debug firmware') { options[:build_type] = 'Debug' }
     opts.on('--vm-opt PROFILE', PicoRubyGaming::VMProfile::NAMES,
-            'RP2350 mruby core: size (-Os, default) or speed (-O2)') { |value| options[:vm_opt] = value }
+            'RP2350 mruby core: speed (-O2, release default) or size (-Os)') { |value| options[:vm_opt] = value }
     opts.on('--audio-output OUTPUT', %w[pwm i2s], 'audio transport (default: pwm)') { |value| options[:audio_output] = value }
     opts.on('--audio-max-gain PERCENT', Integer, 'output gain ceiling: 0..100 (default: 100)') { |value| options[:audio_max_gain] = value }
     opts.on('--i2s-bclk GPIO', Integer, 'I2S BCLK pin, WS is GPIO+1 (default: 26)') { |value| options[:i2s_bclk] = value }
@@ -141,6 +141,8 @@ def engine_workflow(argv)
     end
   end
   parser.parse!(argv)
+  vm_debug = options[:build_type] == 'Debug' || !!(ENV['PICORUBY_DEBUG'] || ENV['PICORB_DEBUG'])
+  options[:vm_opt] ||= PicoRubyGaming::VMProfile.default_for(firmware: options[:firmware], debug: vm_debug)
   if options[:clock_profile] != 'stock'
     fail_with('--clock-profile requires WeAct RP2350B Core') unless options[:board] == 'weact_studio_rp2350b_core'
     fail_with('--clock-profile requires an RP2350 firmware build') unless options[:firmware]
@@ -169,7 +171,7 @@ def engine_workflow(argv)
   end
   begin
     PicoRubyGaming::VMProfile.validate(options[:vm_opt],
-      debug: options[:build_type] == 'Debug' || !!(ENV['PICORUBY_DEBUG'] || ENV['PICORB_DEBUG']))
+      debug: vm_debug)
   rescue ArgumentError => error
     fail_with(error.message)
   end
@@ -193,7 +195,8 @@ def engine_workflow(argv)
     firmware_dir = File.expand_path(options[:firmware_dir])
   else
     firmware_suffix = options[:board] == DEFAULT_PICO_BOARD ? '' : "-#{options[:board].tr('_', '-')}"
-    firmware_suffix += '-vm-speed' if options[:vm_opt] == 'speed'
+    firmware_suffix += PicoRubyGaming::VMProfile.firmware_suffix(options[:vm_opt],
+      default: PicoRubyGaming::VMProfile.default_for(debug: vm_debug))
     firmware_suffix += "-#{options[:clock_profile]}" unless options[:clock_profile] == 'stock'
     firmware_suffix += '-clock-check' if options[:clock_diagnostics]
     firmware_suffix += '-audio-i2s' if options[:audio_output] == 'i2s'

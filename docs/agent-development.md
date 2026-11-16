@@ -40,7 +40,7 @@ WeActでI2SのDINをGP28、音量ダイヤルをGP42、出力上限を50%にす�
 | 対象ボード | `--board BOARD`。既定はPico Plus 2 |
 | 音声出力 | `--audio-output pwm\|i2s`、`--volume-knob`、`--audio-max-gain 0..100` |
 | I2S配線 | `--i2s-bclk GPIO`、`--i2s-data GPIO`。組み合わせは[実機ガイド](hardware.md)参照 |
-| VM | `--vm-opt size\|speed`。既定はsize |
+| VM | `--vm-opt size\|speed`。通常のReleaseはspeed、Debugはsize |
 | ビルド対象 | `--firmware-only`、`--wasm-only`、`--no-emulator-runtime` |
 | パス | `--picoruby-root`、`--build-root`、`--firmware-dir`、`--arm-toolchain` |
 | 調査 | `--debug`、`--profiling` |
@@ -117,7 +117,7 @@ ruby tools/build/workflow.rb engine --board weact_studio_rp2350b_core \
   --battery-warning --profiling --firmware-dir build/clock-ladder/firmware-stock
 ```
 
-続けて、変更範囲を実機クロックに限定した各候補を生成します。共通VMは同じsize設定で、
+続けて、変更範囲を実機クロックに限定した各候補を生成します。共通VMは同じspeed設定で、
 WASMは上の完全ビルドの出力を使います。各UF2・ELF・mapは指定した別ディレクトリに残ります。
 
 ```sh
@@ -137,23 +137,24 @@ ruby tests/native/clock_profile_test.rb
 
 ## VM最適化の比較をするとき
 
-描画設定を固定し、RP2350のmrubyコアだけを比較します。標準releaseはsizeのままです。
+描画設定を固定し、RP2350のmrubyコアだけを比較します。標準Releaseはspeedです。
 
 ```sh
 ruby tools/build/workflow.rb engine --vm-opt size
 ruby tools/build/workflow.rb engine --vm-opt speed
-ruby tools/build/workflow.rb engine --vm-opt size
 ruby tools/build/workflow.rb checks
 ruby tests/native/vm_profile_test.rb
 ruby tests/native/performance_test.rb
 python3 tests/native/minimum_profile_regression.py
 ```
 
-speedのUF2は`build/firmware-release-vm-speed/pico_ruby_gaming.uf2`、クロスライブラリは
-`build/mruby-vm-speed/pico-gaming/`です。sizeは通常の出力先です。`--build-root`も使えます。
+speedのUF2は通常の`build/firmware-release/pico_ruby_gaming.uf2`、クロスライブラリは
+`build/mruby-vm-speed/pico-gaming/`です。sizeの比較UF2は`build/firmware-release-vm-size/`に出ます。
+`--build-root`も使えます。ホストROMコンパイラはspeed側を優先し、以前のsize側のものも利用できます。
 同じ`--firmware-dir`を指定して切り替えた場合も、リンク先のライブラリと起動ログを確認します。
 `gaming-build.json`の設定差でクロスターゲットを作り直すため、別構成のオブジェクトを流用しません。
 実際のコンパイル引数は各オブジェクト隣の`.o.flags`で確認できます。
+DebugとWASMだけのビルドでは、省略時はsizeに解決します。
 WASM・ホストの最適化は比較要因に含めず、共通契約を確認します。`--wasm-only --vm-opt speed`は拒否します。
 手順とログの範囲は[性能の計測](performance-notes.md#計測する)を参照してください。
 

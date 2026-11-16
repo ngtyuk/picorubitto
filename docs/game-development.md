@@ -51,7 +51,8 @@ cd /path/to/picorubitto
 ruby tools/build/workflow.rb game path/to/game
 ```
 
-ホストコンパイラは`workflow.rb engine`で生成する`build/mruby/mrbc/default/bin/mrbc`です。
+ホストコンパイラは`workflow.rb engine`で生成する`build/mruby-vm-speed/mrbc/default/bin/mrbc`です。
+以前のsizeビルドで生成した`build/mruby/mrbc/default/bin/mrbc`も自動で検出します。
 PicoRuby 4.0.5は`RITE0400`形式を使います。以前の版の`game.mrb`も元コードから再生成し、
 対応するUF2と一緒に更新します。コンパイラを指定する場合は`--mrbc PATH`を使います。
 

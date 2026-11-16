@@ -49,7 +49,7 @@ TFT初期化後、SD／ROMに依存しない起動画面を描画します。起
 スプラッシュ転送後は両フレームバッファを黒に戻し、初回のゲーム表示は全面転送します。
 表示自体が初期化できない障害ではUSBシリアルに詳細を出します。
 
-`engine --vm-opt size`が既定で、`--vm-opt speed`はVMコアの最適化比較用です。
+通常のReleaseは`engine --vm-opt speed`が既定で、`--vm-opt size`はサイズ優先の比較用です。
 speedは`mruby_config.rb`から`tools/build/vm_profile.rb`を通じて`picoruby-mruby`の
 コンパイラだけを`-Os`から`-O2`へ切り替えます。VM、GC、基本コレクション等を含みます。
 Game gem、描画C、別gemの拡張・Estalloc・スケジューラ、ホストコンパイラ、WASMの最適化は変更しません。
@@ -61,7 +61,9 @@ sizeのクロス出力は`build/mruby/`、speedは`build/mruby-vm-speed/`です�
 別checkoutやホストコンパイラの既存ファイルは削除しません。CMakeはリンク先ライブラリの
 記録からプロファイルを読み、起動時の`VM: profile=... scope=picoruby-mruby`へ反映します。
 記録がない古いライブラリはworkflowから再ビルドします。Debugとのspeed併用は拒否します。
-標準releaseの採用設定は実機比較までsizeを維持します。
+DebugとWASMだけのビルドでは、省略時はsizeに解決します。
+既定のspeedは通常のUF2出力先を使い、比較用sizeには`-vm-size`を付けます。
+ホストROMコンパイラはspeed側を優先し、既存のsize側のコンパイラにもフォールバックします。
 
 CMakeは`libmruby.a`をフルパスでリンクし、ファイルの更新をELF・UF2の依存関係として
 追跡します。Cバインディングだけを更新した増分ビルドでも、最新ライブラリで再リンクします。

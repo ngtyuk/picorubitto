@@ -5,13 +5,14 @@ require 'fileutils'
 require 'optparse'
 require 'rbconfig'
 require_relative 'checks_source'
+require_relative 'vm_profile'
 
 root = File.expand_path('../..', __dir__)
 options = {
   output: nil,
   compare_3d: false,
   audio_only: false,
-  compiler: File.join(root, 'build/mruby/mrbc/default/bin/mrbc')
+  compiler: PicoRubyGaming::VMProfile.host_compiler(File.join(root, 'build'))
 }
 OptionParser.new do |parser|
   parser.banner = 'Usage: build_checks.rb [--compare-3d | --audio-only] [--output DIR] [--mrbc PATH]'

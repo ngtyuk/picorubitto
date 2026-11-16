@@ -138,13 +138,15 @@ export ARM_TOOLCHAIN=/absolute/path/to/arm-none-eabi/bin
 ruby tools/build/workflow.rb engine
 ```
 
-既定ボードはPimoroni Pico Plus 2です。次を生成します。
+既定ボードはPimoroni Pico Plus 2です。通常のReleaseはRuby VMを速度優先でビルドします
+（`--vm-opt speed`、`-O2`）。サイズ優先は`--vm-opt size`で選べます。Debugの既定はsizeです。
+次を生成します。
 
 | 成果物 | 場所 |
 | --- | --- |
 | ファームウェア | `build/firmware-release/pico_ruby_gaming.uf2` |
 | ELF / map | `build/firmware-release/pico_ruby_gaming.elf` / `.map` |
-| PC用ROMコンパイラ | `build/mruby/mrbc/default/bin/mrbc` |
+| PC用ROMコンパイラ | `build/mruby-vm-speed/mrbc/default/bin/mrbc` |
 | ブラウザ用ランタイム | `emulator/picoruby/` |
 
 WeAct RP2350B Core Board（8MB PSRAM）では次を使います。

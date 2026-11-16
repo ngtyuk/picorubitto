@@ -3,6 +3,7 @@ require 'tmpdir'
 require 'open3'
 require 'digest'
 require 'json'
+require_relative '../../tools/build/vm_profile'
 
 HARDWARE_SUITE_LIBRARY = true
 module Game
@@ -120,7 +121,7 @@ class ChecksTest < Minitest::Test
 
   def test_builder_compiles_one_cartridge_and_copies_exact_assets
     root = File.expand_path('../..', __dir__)
-    compiler = ENV.fetch('CHECKS_MRBC', File.join(root, 'build/mruby/mrbc/default/bin/mrbc'))
+    compiler = ENV.fetch('CHECKS_MRBC', PicoRubyGaming::VMProfile.host_compiler(File.join(root, 'build')))
     skip 'Build the matching host mrbc first' unless File.file?(compiler)
     Dir.mktmpdir('gaming-checks-') do |output|
       log, status = Open3.capture2e('ruby', File.join(root, 'tools/build/build_checks.rb'),
@@ -171,7 +172,7 @@ class ChecksTest < Minitest::Test
 
   def test_comparison_builder_includes_legacy_profile_and_valid_bytecode
     root = File.expand_path('../..', __dir__)
-    compiler = ENV.fetch('CHECKS_MRBC', File.join(root, 'build/mruby/mrbc/default/bin/mrbc'))
+    compiler = ENV.fetch('CHECKS_MRBC', PicoRubyGaming::VMProfile.host_compiler(File.join(root, 'build')))
     skip 'Build the matching host mrbc first' unless File.file?(compiler)
     Dir.mktmpdir('gaming-comparison-') do |output|
       log, status = Open3.capture2e('ruby', File.join(root, 'tools/build/build_checks.rb'),
@@ -187,7 +188,7 @@ class ChecksTest < Minitest::Test
 
   def test_audio_only_builder_uses_the_shared_pad_without_large_or_render_assets
     root = File.expand_path('../..', __dir__)
-    compiler = ENV.fetch('CHECKS_MRBC', File.join(root, 'build/mruby/mrbc/default/bin/mrbc'))
+    compiler = ENV.fetch('CHECKS_MRBC', PicoRubyGaming::VMProfile.host_compiler(File.join(root, 'build')))
     skip 'Build the matching host mrbc first' unless File.file?(compiler)
     Dir.mktmpdir('gaming-audio-') do |output|
       command = ['ruby', File.join(root, 'tools/build/build_checks.rb'),

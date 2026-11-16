@@ -8,8 +8,9 @@ picoruby_root = ENV.fetch('PICORUBY_ROOT')
 game_root = File.expand_path(__dir__)
 require File.join(game_root, 'tools', 'runtime_profile.rb')
 require File.join(game_root, 'tools', 'build', 'vm_profile.rb')
-vm_profile = PicoRubyGaming::VMProfile.validate(ENV.fetch('GAME_VM_OPT', 'size'),
-                                              debug: !!(ENV['PICORUBY_DEBUG'] || ENV['PICORB_DEBUG']))
+vm_debug = !!(ENV['PICORUBY_DEBUG'] || ENV['PICORB_DEBUG'])
+vm_profile = PicoRubyGaming::VMProfile.validate(
+  ENV.fetch('GAME_VM_OPT', PicoRubyGaming::VMProfile.default_for(debug: vm_debug)), debug: vm_debug)
 
 MRuby::CrossBuild.new('pico-gaming') do |conf|
   conf.toolchain('gcc')

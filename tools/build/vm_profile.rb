@@ -9,12 +9,29 @@ module PicoRubyGaming
   # its VM, GC and core collections. Other gems and the host/WASM stay fixed.
   module VMProfile
     NAMES = %w[size speed].freeze
+    DEFAULT = 'speed'.freeze
     module_function
 
     def validate(name, debug: false)
       raise ArgumentError, "unknown VM optimization: #{name}" unless NAMES.include?(name)
       raise ArgumentError, 'VM speed comparison requires a release build' if name == 'speed' && debug
       name
+    end
+
+    def default_for(firmware: true, debug: false)
+      firmware && !debug ? DEFAULT : 'size'
+    end
+
+    def host_compiler(root)
+      candidates = [DEFAULT, 'size'].uniq.map do |name|
+        File.join(build_root(root, name), 'mrbc', 'default', 'bin', 'mrbc')
+      end
+      candidates.find { |path| File.file?(path) } || candidates.first
+    end
+
+    def firmware_suffix(name, default: DEFAULT)
+      validate(name)
+      name == default ? '' : "-vm-#{name}"
     end
 
     def configure(conf, name)

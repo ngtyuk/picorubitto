@@ -140,13 +140,15 @@ export ARM_TOOLCHAIN=/absolute/path/to/arm-none-eabi/bin
 ruby tools/build/workflow.rb engine
 ```
 
-The default board is Pimoroni Pico Plus 2. This produces:
+The default board is Pimoroni Pico Plus 2. Release firmware builds the Ruby VM
+with speed optimization (`--vm-opt speed`, `-O2`). Use `--vm-opt size` for
+size optimization; Debug builds default to `size`. This produces:
 
 | Output | Location |
 | --- | --- |
 | Firmware | `build/firmware-release/pico_ruby_gaming.uf2` |
 | ELF / map | `build/firmware-release/pico_ruby_gaming.elf` / `.map` |
-| Host ROM compiler | `build/mruby/mrbc/default/bin/mrbc` |
+| Host ROM compiler | `build/mruby-vm-speed/mrbc/default/bin/mrbc` |
 | Browser runtime | `emulator/picoruby/` |
 
 For WeAct RP2350B Core Board with 8 MB PSRAM, run:

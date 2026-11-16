@@ -4,10 +4,11 @@
 require 'fileutils'
 require 'optparse'
 require 'rbconfig'
+require_relative 'vm_profile'
 
 options = {
   output: File.expand_path('../../build/games/manual', __dir__),
-  compiler: ENV['PICORBC'] || File.expand_path('../../build/mruby/mrbc/default/bin/mrbc', __dir__),
+  compiler: ENV['PICORBC'] || PicoRubyGaming::VMProfile.host_compiler(File.expand_path('../../build', __dir__)),
   convert_assets: false,
   asset_scale: 1.0,
   asset_key_color: 0xf81f,

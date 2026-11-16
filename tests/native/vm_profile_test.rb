@@ -12,6 +12,29 @@ class VMProfileTest < Minitest::Test
     assert_raises(ArgumentError) { Profile.validate('speed', debug: true) }
   end
 
+  def test_release_defaults_to_speed_without_breaking_debug_or_wasm_only
+    assert_equal 'speed', Profile.default_for
+    assert_equal 'size', Profile.default_for(debug: true)
+    assert_equal 'size', Profile.default_for(firmware: false)
+    assert_equal '', Profile.firmware_suffix('speed')
+    assert_equal '-vm-size', Profile.firmware_suffix('size')
+    assert_equal '', Profile.firmware_suffix('size', default: Profile.default_for(debug: true))
+  end
+
+  def test_host_compiler_prefers_the_default_build_with_legacy_fallback
+    Dir.mktmpdir('gaming-compiler-default-') do |root|
+      speed = File.join(Profile.build_root(root, 'speed'), 'mrbc/default/bin/mrbc')
+      size = File.join(Profile.build_root(root, 'size'), 'mrbc/default/bin/mrbc')
+      assert_equal speed, Profile.host_compiler(root)
+      FileUtils.mkdir_p(File.dirname(size))
+      File.write(size, 'legacy host compiler')
+      assert_equal size, Profile.host_compiler(root)
+      FileUtils.mkdir_p(File.dirname(speed))
+      File.write(speed, 'default host compiler')
+      assert_equal speed, Profile.host_compiler(root)
+    end
+  end
+
   def test_only_mruby_core_compiler_changes
     vm = OpenStruct.new(cc: OpenStruct.new(flags: [['-Os', '-fno-unroll-loops'], '-fshort-enums']))
     game = OpenStruct.new(cc: OpenStruct.new(flags: ['-Os', '-O2']))
