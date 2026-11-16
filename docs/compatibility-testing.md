@@ -255,6 +255,29 @@ shallow cloneでは比較元コミットの取得が必要です。
 
 ## ブラウザ描画の回帰テスト
 
+### テクスチャの省略引数
+
+```sh
+python3 tests/native/texture_binding_regression.py
+python3 tests/native/texture_regression.py
+```
+
+前者は実際のmruby VMの`mrb_get_args`、本番の`texture_draw`と描画C関数を通します。
+512×24の画像で2・6・7・8引数（途中の3〜5引数も含む）、既定／カスタム透明色と不透明画像、
+画面端の切り出し、明示的な拡大・縮小、不正寸法・範囲・引数数・明示的な`nil`を検証します。
+63ケースで画面全体とdirty領域を比較し、AddressSanitizer／UndefinedBehaviorSanitizerも使います。
+ホストVMが未生成なら最小構成のビルドと回帰を先に実行します。TFT転送とテクスチャ確保は
+テスト用であり、実機の表示・性能・SD・入力の確認は別途必要です。
+
+`--binding-source PATH`で比較する`game.c`を指定できます。修正前のファイルでは6引数の
+32×24切り出しが512×24として描かれ、画素比較が失敗します。現行ファイルでは合格します。
+生成した`build/tests/texture-draw/`の画像とケースを使い、HTTPサーバー上の
+[Texture draw defaults](http://localhost:8080/tests/web/texture-draw.html)でも45ケースを検証します。
+実際のWASMアダプタを通してCanvasへ渡る8値と、明示的な8引数呼び出しとの画面全体の一致を
+確認します。通常のWASM契約・実機用統合ROMにも6・7引数の描画を含めます。
+
+### 既存の描画比較
+
 旧版比較に必要なデータはGit履歴から`build/`へ生成します。固定コミットは各テストの
 比較基準です。過去のUF2や開発者のローカルファイルを用意する必要はありません。
 

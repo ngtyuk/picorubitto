@@ -63,6 +63,9 @@ sizeのクロス出力は`build/mruby/`、speedは`build/mruby-vm-speed/`です�
 記録がない古いライブラリはworkflowから再ビルドします。Debugとのspeed併用は拒否します。
 標準releaseの採用設定は実機比較までsizeを維持します。
 
+CMakeは`libmruby.a`をフルパスでリンクし、ファイルの更新をELF・UF2の依存関係として
+追跡します。Cバインディングだけを更新した増分ビルドでも、最新ライブラリで再リンクします。
+
 ## 共通部分
 
 組み込み文字の`Game::Display.text_aligned`は共通gemのRuby実装で基準座標から
@@ -100,6 +103,11 @@ WASMの`stdlib`はブラウザUIの依存関係のため維持しますが、そ
 
 `Sprite#draw_batch`は、`[x, y, frame, ...]`形式の整数配列を受け取り、実機ではC側、
 WASMではJavaScript側で一括処理します。
+
+`Texture#draw`の実機Cバインディングは、`mrb_get_args`の引数数で表示幅・高さの省略を
+個別に判定し、引数解析後の切り出し幅・高さを使います。WASMのRubyアダプタも同じ既定値を
+使います。描画C関数とCanvasへは解決済みの8値を渡し、拡大縮小・透明色・クリップ処理は
+それぞれの既存描画経路が担当します。
 
 `Game::ThreeD`は、実機ではSRAMまたはPSRAM上の深度バッファとフレームバッファへ、WASMではCanvasから
 取得したフレームへ、同じワールド座標の三角形とwireframe edgeをソフトウェアラスタライズします。

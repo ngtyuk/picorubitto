@@ -614,6 +614,7 @@ module Game
     def draw(x, y, source_x = 0, source_y = 0, source_width = @width,
              source_height = @height, destination_width = source_width,
              destination_height = source_height)
+      # Omitted destination dimensions follow the resolved crop dimensions.
       JS.global[:GameEmulator].drawTexture(
         @handle.id, x, y, source_x, source_y, source_width, source_height,
         destination_width, destination_height

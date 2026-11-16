@@ -264,8 +264,6 @@ target_include_directories(pico_ruby_gaming PRIVATE
   "${FAT_ROOT}/src/hal"
 )
 
-target_link_directories(pico_ruby_gaming PRIVATE "${PICORUBY_BUILD_DIR}/lib")
-
 if(GAME_AUDIO_VOLUME_KNOB OR GAME_BATTERY_WARNING)
   target_link_libraries(pico_ruby_gaming PRIVATE hardware_adc)
 endif()
@@ -288,7 +286,7 @@ target_link_libraries(pico_ruby_gaming PRIVATE
   hardware_clocks
   hardware_timer
   pico_runtime
-  mruby
+  "${PICORUBY_BUILD_DIR}/lib/libmruby.a"
 )
 
 pico_enable_stdio_usb(pico_ruby_gaming 1)

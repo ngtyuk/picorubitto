@@ -844,6 +844,7 @@ texture_load(mrb_state *mrb, mrb_value klass)
 static mrb_value
 texture_draw(mrb_state *mrb, mrb_value self)
 {
+  mrb_int argc;
   mrb_int x;
   mrb_int y;
   mrb_int source_x = 0;
@@ -857,11 +858,15 @@ texture_draw(mrb_state *mrb, mrb_value self)
   texture = (game_texture_t *)mrb_data_get_ptr(mrb, self, &game_texture_type);
   source_width = game_texture_width(texture);
   source_height = game_texture_height(texture);
-  destination_width = source_width;
-  destination_height = source_height;
-  mrb_get_args(mrb, "ii|iiiiii", &x, &y, &source_x, &source_y,
-               &source_width, &source_height, &destination_width,
-               &destination_height);
+  argc = mrb_get_args(mrb, "ii|iiiiii", &x, &y, &source_x, &source_y,
+                      &source_width, &source_height, &destination_width,
+                      &destination_height);
+  if (argc < 7) {
+    destination_width = source_width;
+  }
+  if (argc < 8) {
+    destination_height = source_height;
+  }
   if (x < INT_MIN || x > INT_MAX || y < INT_MIN || y > INT_MAX ||
       source_x < 0 || source_y < 0 || source_width <= 0 ||
       source_height <= 0 || destination_width <= 0 ||

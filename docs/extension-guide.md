@@ -64,6 +64,11 @@ APIとの接続が必要なら`emulator/emulator.js`に閉じ込めます。ブ�
 
 このRubyファイルは、WASMページとRP2350用ROMの両方で実行します。
 
+省略引数は各引数数で検証します。前の引数に依存する既定値は、C側でも引数解析後に
+解決します。`Texture#draw`の回帰は`tests/native/texture_binding_regression.py`で、
+実際のmruby引数解析・Cバインディング・描画関数を通して画面全体とdirty領域を比較します。
+描画関数へ解決済み引数だけを渡すテストでは、バインディングの省略値の不具合を検出できません。
+
 ### 6. 文書と生成物を更新する
 
 APIの仕様は[`api-reference.md`](api-reference.md)、実装の分担は

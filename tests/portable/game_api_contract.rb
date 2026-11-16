@@ -368,6 +368,9 @@ def run_game_api_contract
   contract_check(texture.width == 32, 'texture width')
   contract_check(texture.height == 32, 'texture height')
   texture.draw(16, 72)
+  # Omitted destination dimensions use the resolved crop, independently per axis.
+  texture.draw(48, 140, 4, 5, 16, 12)
+  texture.draw(72, 140, 4, 5, 16, 12, 32)
   texture.draw(224, 72, 0, 0, 32, 32, 64, 64)
   # Non-integer sampling, downscaling, axis-only scaling and clipped regions.
   texture.draw(-7, 180, 3, 5, 21, 13, 53, 37)
