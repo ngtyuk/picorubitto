@@ -85,8 +85,10 @@ module Game
       true
     end
     def self.stop; end
+    def self.stop_bgm; end
     class Sound < Texture
       def play(*); end
+      def play_bgm(*); end
       def stop; end
     end
   end
@@ -154,7 +156,7 @@ end
 # SUITE_INSERTION_POINT
 
 raise 'unexpected IO gem' if HardwareChecks.respond_to?(:puts, true)
-raise 'unexpected kernel-ext gem' if HardwareChecks.respond_to?(:send)
+raise 'unexpected kernel-ext gem' if HardwareChecks.respond_to?(:caller, true)
 print '[MINIMUM] hardware and Game API are stubbed', "\n"
 audio = HardwareAudio::Player.new
 audio.update(1 | 2 | 4 | 8, 0)

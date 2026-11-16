@@ -16,7 +16,7 @@ configuration_source = (root / 'tests/native/minimum_profile.rb').read_text()
 if not configuration.exists() or configuration.read_text() != configuration_source:
     configuration.write_text(configuration_source)
 environment = dict(os.environ, MRUBY_CONFIG=str(configuration),
-                   MRUBY_BUILD_DIR=str(output))
+                   MRUBY_BUILD_DIR=str(output), GAME_PROJECT_ROOT=str(root))
 log = output / 'build.log'
 with log.open('w') as stream:
     subprocess.run(['ruby', '-S', 'rake', '-f', str(mruby / 'Rakefile')],
@@ -29,6 +29,12 @@ audio = (root / 'tests/portable/hardware_audio.rb').read_text()
 vm_performance = (root / 'tests/portable/hardware_vm_performance.rb').read_text()
 legacy = (root / 'tests/portable/hardware_performance_legacy.rb').read_text()
 with tempfile.TemporaryDirectory(prefix='gaming-minimum-') as directory:
+    # Load only the portable language contract, without a Game backend or loop.
+    contract = (root / 'tests/portable/game_api_contract.rb').read_text()
+    source = Path(directory) / 'ruby-runtime.rb'
+    source.write_text('HARDWARE_SUITE = true\n' + contract.replace("require 'game'\n", '') +
+                      "\nrun_ruby_runtime_contract\nprint '[RUBY RUNTIME] PASS', \"\\n\"\n")
+    subprocess.run([str(output / 'minimum-profile/bin/mruby'), str(source)], check=True)
     for profile, rounds in [('standard', 42), ('comparison', 48)]:
         bundled = f'HARDWARE_PERFORMANCE_PROFILE = "{profile}"\n' + flight + performance + vm_performance + audio
         if profile == 'comparison':

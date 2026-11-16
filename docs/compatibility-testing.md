@@ -25,6 +25,32 @@ ruby tools/build/workflow.rb checks
 
 [`tests/portable/game_api_contract.rb`](../tests/portable/game_api_contract.rb)は、API版、
 機能問い合わせ、`rand`の戻り値と範囲、入力、2D・3D描画、組み込みかな・漢字と文字揃えの呼び出し、アセットの寿命、音声、保存、衝突、時間を検査します。
+Ruby拡張の契約には`Integer#chr`、`String#each_char`、`instance_variable_get/set`の存在、
+`0..255`の1バイト変換と連結、日本語・英数字の街名の列挙と再構成、月次フィールドの更新と
+スナップショット復元を含みます。保存は全256バイトを実際の`Game::Save`へ書き込み、
+読み出し結果を比較します。同じ契約は実機用統合ROMのCOMMON APIでも実行します。
+
+```sh
+python3 tests/native/minimum_profile_regression.py
+```
+
+ホストVMも`tools/runtime_profile.rb`の共通Ruby拡張一覧からビルドし、上記の言語契約を実行します。
+ホスト側の表示・入力・保存装置は模擬実装で、WASMや実機の保存確認は別途必要です。
+`local-games/machibiyori/`がある場合は、ゲームの既存`tests/spec.rb`を同ホストVMで実行し、
+街名処理・月次の開始／取消・複数月の進行・保存／復元も確認します。例えば次でソースを連結します。
+
+```sh
+printf '%s\n' 'def puts(message); print message, "\n"; end' > build/tests/machibiyori-spec.rb
+cat local-games/machibiyori/tests/save_fixture.rb local-games/machibiyori/src/model.rb \
+  local-games/machibiyori/tests/spec.rb >> build/tests/machibiyori-spec.rb
+build/tests/minimum-profile/minimum-profile/bin/mruby build/tests/machibiyori-spec.rb
+node local-games/machibiyori/tests/wasm_test.mjs
+```
+
+先頭の`puts`定義は、IOを含まないホストVM上でテストの進捗だけを`print`へ渡します。
+ゲーム本体には追加しません。WASMのゲーム検証にも下記HTTPサーバーを使います。
+ゲームとその検証素材はローカル専用です。
+
 組み込み英数字・かな・漢字の実機CとブラウザJavaScriptのデータおよびピクセル一致は
 `python3 tests/native/kana_text_regression.py`で検査します。組み込み字形の再生成には
 [マルミーニャの配布元](https://github.com/hicchicc/x12y12pxMaruMinya)の1.500版TTFと

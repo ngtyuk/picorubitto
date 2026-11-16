@@ -74,16 +74,8 @@ MRuby::CrossBuild.new('pico-gaming') do |conf|
   # require surface needed by precompiled games without interactive devices.
   conf.gem core: 'picoruby-require'
   conf.gem core: 'picoruby-rng'
+  PicoRubyGaming::RuntimeProfile.add_ruby_gems(conf,
+    File.join(picoruby_root, 'mrbgems', 'picoruby-mruby', 'lib', 'mruby'))
   PicoRubyGaming::RuntimeProfile.add_common_gems(conf, game_root)
   conf.gem gemdir: File.join(game_root, 'mrbgems', 'picoruby-game')
-
-  # Keep the base runtime small, but include the standard collection and
-  # math/numeric helpers needed by cartridge game logic. These are the mruby
-  # extensions used by PicoRuby's normal stdlib gembox.
-  conf.gem gemdir: File.join(picoruby_root, 'mrbgems', 'picoruby-mruby',
-                             'lib', 'mruby', 'mrbgems', 'mruby-math')
-  conf.gem gemdir: File.join(picoruby_root, 'mrbgems', 'picoruby-mruby',
-                             'lib', 'mruby', 'mrbgems', 'mruby-array-ext')
-  conf.gem gemdir: File.join(picoruby_root, 'mrbgems', 'picoruby-mruby',
-                             'lib', 'mruby', 'mrbgems', 'mruby-numeric-ext')
 end

@@ -26,6 +26,18 @@ end
 
 ゲームは`Game` APIだけを使います。実機のGPIOやブラウザのJavaScriptを直接参照しません。
 
+## 共通のRuby拡張
+
+実機とWASMは`tools/runtime_profile.rb`で、`mruby-math`、`mruby-array-ext`、
+`mruby-numeric-ext`、`mruby-string-ext`、`mruby-metaprog`を共通に組み込みます。
+`Integer#chr`、`String#each_char`、`Object#instance_variable_get`、
+`Object#instance_variable_set`もゲームから使えます。ブラウザのUI用に追加された他のgemは、
+実機との共通契約に含めません。
+
+`0..255`の`Integer#chr`はそれぞれ1バイトを返します。バイナリ保存には`bytesize`、
+`getbyte`、`setbyte`、`byteslice`を使い、日本語の街名などUTF-8テキストの文字列挙には
+`each_char`を使います。保存APIはバイト列を扱うため、復元時のテキスト検証はゲーム側で行います。
+
 ## 乱数
 
 PicoRubyの`rand`を実機とWASMの両方で使えます。正の整数`n`を渡すと、0以上`n`未満の

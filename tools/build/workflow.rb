@@ -246,7 +246,8 @@ def engine_workflow(argv)
       'game_optimize_for_speed' => true,
       'debug' => ENV['PICORUBY_DEBUG'] || ENV['PICORB_DEBUG'],
       'environment_flags' => %w[CFLAGS CXXFLAGS CPPFLAGS LDFLAGS HOST_CC].to_h { |key| [key, ENV[key]] },
-      'configuration' => [mruby_config, File.join(ROOT, 'tools/build/vm_profile.rb'),
+      'configuration' => [mruby_config, File.join(ROOT, 'tools/runtime_profile.rb'),
+                          File.join(ROOT, 'tools/build/vm_profile.rb'),
                           File.join(ROOT, 'mrbgems/picoruby-game/mrbgem.rake')].to_h do |path|
         [path, Digest::SHA256.file(path).hexdigest]
       end

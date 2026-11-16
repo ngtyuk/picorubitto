@@ -82,6 +82,14 @@ RP2350の64bit整数とWASMのNumberの丸めを同一視せず、各バック�
 `mrbgems/picoruby-game-common/`は、実機とWASMの両方に組み込む共通gemです。共有する
 gemの一覧は`tools/runtime_profile.rb`で管理します。
 
+同じ設定の`RUBY_GEMS`で、`mruby-math`、`mruby-array-ext`、`mruby-numeric-ext`、
+`mruby-string-ext`、`mruby-metaprog`も両実行先へ組み込みます。実機の`minimum`と
+WASMの`stdlib`の差に依存せず、ゲーム用Ruby拡張の最低限の契約を明示します。
+WASMの`stdlib`はブラウザUIの依存関係のため維持しますが、その全機能を実機で保証する
+ものではありません。ホストの最小構成テストも同じ`RUBY_GEMS`を使います。
+`gaming-build.json`には`tools/runtime_profile.rb`のハッシュも含め、拡張一覧だけの変更でも
+実機ライブラリを作り直します。
+
 ゲームが使う共通の契約は次のとおりです。
 
 - `Game::API_VERSION`

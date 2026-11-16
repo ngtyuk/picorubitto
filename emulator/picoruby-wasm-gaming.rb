@@ -29,13 +29,14 @@ MRuby::CrossBuild.new('picoruby-wasm') do |conf|
 
   conf.gembox 'mruby-posix'
   conf.gembox 'stdlib'
+  PicoRubyGaming::RuntimeProfile.add_ruby_gems(conf,
+    File.join(MRUBY_ROOT, 'mrbgems', 'picoruby-mruby', 'lib', 'mruby'))
   PicoRubyGaming::RuntimeProfile.add_common_gems(conf, project_root)
 
   if ENV['PICORUBY_DEBUG']
     conf.cc.defines << 'MRB_USE_DEBUG_HOOK'
     conf.gem gemdir: "#{MRUBY_ROOT}/mrbgems/picoruby-mruby/lib/mruby/mrbgems/mruby-binding"
   end
-  conf.gem gemdir: "#{MRUBY_ROOT}/mrbgems/picoruby-mruby/lib/mruby/mrbgems/mruby-math"
   conf.gem core: 'picoruby-wasm'
   conf.gem core: 'picoruby-indexeddb'
   conf.gem core: 'picoruby-funicular'

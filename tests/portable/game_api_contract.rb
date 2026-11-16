@@ -10,6 +10,44 @@ def contract_check(condition, message)
   raise "Game API contract failed: #{message}" unless condition
 end
 
+def contract_byte_string
+  # Start with a binary string, including under MRB_UTF8_STRING.
+  bytes = 255.chr
+  bytes.setbyte(0, 0)
+  bytes = bytes.byteslice(0, 0)
+  (0..255).each do |value|
+    char = value.chr
+    contract_check(char.bytesize == 1 && char.getbyte(0) == value, 'Integer#chr byte range')
+    bytes << char
+  end
+  contract_check(bytes.bytesize == 256, 'binary string byte size')
+  (0..255).each do |value|
+    contract_check(bytes.getbyte(value) == value, 'binary string concatenation')
+  end
+  bytes
+end
+
+def run_ruby_runtime_contract
+  print '[CONTRACT] common Ruby extensions', "\n"
+  contract_check(0.respond_to?(:chr), 'Integer#chr exists')
+  contract_check(''.respond_to?(:each_char), 'String#each_char exists')
+  object = Object.new
+  contract_check(object.respond_to?(:instance_variable_get), 'instance_variable_get exists')
+  contract_check(object.respond_to?(:instance_variable_set), 'instance_variable_set exists')
+  contract_byte_string
+  chars = []
+  'あアTown12'.each_char { |char| chars << char }
+  contract_check(chars == ['あ', 'ア', 'T', 'o', 'w', 'n', '1', '2'], 'UTF-8 town name characters')
+  contract_check(chars.join == 'あアTown12', 'town name reconstruction')
+  object.instance_variable_set(:@month, 12)
+  snapshot = object.instance_variable_get(:@month)
+  object.instance_variable_set(:@month, snapshot + 1)
+  contract_check(object.instance_variable_get(:@month) == 13, 'monthly field update')
+  object.instance_variable_set(:@month, snapshot)
+  contract_check(object.instance_variable_get(:@month) == 12, 'monthly snapshot restoration')
+  true
+end
+
 def contract_live_assets(baseline)
   texture = Game::Texture.load('texture.raw', 32, 32)
   sprite = Game::Sprite.load('texture.raw', 32, 32, 1)
@@ -70,6 +108,7 @@ def contract_model_lifetime
 end
 
 def run_game_api_contract
+  run_ruby_runtime_contract
   print '[CONTRACT] language / API surface', "\n"
   contract_check(Game::API_VERSION == 16, 'API version')
   contract_check(Game::Runtime.api_version == Game::API_VERSION, 'runtime API version')
@@ -275,7 +314,7 @@ def run_game_api_contract
   contract_check(Game::Assets.resident_bytes == baseline, 'GC reclaims dead assets')
   contract_check(Game::Time.delta_ms == 0, 'time delta starts at zero')
   save_slot = 'contract'
-  save_payload = "SAVE\x00\xffDATA"
+  save_payload = contract_byte_string
   contract_check(Game::Save.delete(save_slot), 'save cleanup')
   contract_check(Game::Save.read(save_slot).nil?, 'missing save')
   contract_check(Game::Save.write(save_slot, save_payload), 'save write result')

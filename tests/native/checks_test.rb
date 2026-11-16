@@ -33,7 +33,7 @@ module Game
   end
 end
 require_relative '../portable/hardware_suite'
-# Match the minimum profile: print is core, puts/send require extra gems.
+# Keep the runner compatible with print-only profiles, without dynamic dispatch.
 HardwareChecks.singleton_class.class_eval { undef_method :puts, :send }
 
 class ChecksTest < Minitest::Test

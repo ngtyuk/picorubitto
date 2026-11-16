@@ -20,6 +20,12 @@ end
 実機とWASMの両方で安全に使うgemは、`tools/runtime_profile.rb`の共通gem一覧へ追加します。
 API本体の実装はバックエンドに置きます。
 
+mruby標準拡張は同ファイルの`RUBY_GEMS`へ追加し、実機・WASM・ホストの最小構成で
+同じ一覧を使います。WASMの`stdlib`に含まれるという理由だけで、ゲームから使える共通
+機能と判断しません。`tests/portable/game_api_contract.rb`の`run_ruby_runtime_contract`へ
+実際の文字列・バイト列・状態更新などの回帰を追加し、
+`python3 tests/native/minimum_profile_regression.py`とWASM契約を確認します。
+
 アセットの寿命を管理する共通処理もこの層に置きます。WASMの内部型`Game::AssetLease`は
 `picoruby-game-common/src/asset_lease.c`で数値IDを所有し、Ruby GCからJSの解放処理を呼びます。
 アセット本体をブリッジの永続参照表へ渡さず、公開するRubyのクラスとAPIは両環境で揃えます。
