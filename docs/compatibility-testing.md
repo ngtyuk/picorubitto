@@ -392,3 +392,26 @@ FIFO停止や補充遅延が0でも、配線・アンプ・スピーカー等に
 電池の負荷時電圧をテスターで測って、約2.2V以下で3秒後にLEDが点滅すること、約2.4V以上で
 3秒後にLEDが点灯に戻ることを確認します。画面の連続描画および音量ダイヤルとの併用も
 確認します。値は3.3V基準・1:2分圧の公称値です。
+
+## 実験用3Dテクスチャのローカル評価
+
+共通契約ROMは`textures_supported?`が真の場合にXYZUVバッチ、遠近補正の有無、空配列、
+不正な長さ・UV・型を確認します。次のホスト検証は本番C経路を独立した重心座標計算と
+照合し、約153万画素・透明色の深度・単色との遮蔽・near/farのUVクリップ・共有辺を確認します。
+
+```sh
+python3 tests/native/three_d_texture_test.py
+python3 tests/native/three_d_texture_binding_test.py
+python3 -m http.server 8080 --bind 127.0.0.1
+```
+
+生成される`build/tests/texture3d-reference.raw`を使い、
+[ブラウザ検証](http://localhost:8080/tests/web/three-d-textures.html)でも約153万画素を
+参照計算と照合します。画素境界に非常に近い点は浮動小数点の丸め差を避けるため比較から除きます。
+WASM契約テストと通常エミュレータも確認します。実機は試作UF2とローカル検証ROMで
+DRAW・FPS・USBログ、立方体・地面・nearクリップ・透明穴・画像サイズ・解像度切替を確認します。
+通常ビルドの設定を維持した別ディレクトリへUF2を生成し、元のUF2を保持します。
+
+`three_d_texture_binding_test.py`は実際のmruby引数解析とCバインディングを通し、
+型・配列長・座標とUVの範囲を検査します。NaN・無限大・floatへ変換できない大きな数値は
+WASMと同じ`ArgumentError`、数値でない要素は`TypeError`になることも確認します。

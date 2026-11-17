@@ -453,6 +453,45 @@ def run_game_api_contract
   )
   print '[CONTRACT] texture / sprite / font', "\n"
   texture = Game::Texture.load('texture.raw', 32, 32)
+  if Game::ThreeD.respond_to?(:textures_supported?) && Game::ThreeD.textures_supported?
+    uv_triangle = [-1, -1, 3, 0, 1, 1, -1, 3, 1, 1, 0, 1, 3, 0.5, 0]
+    contract_check(Game::ThreeD.draw_textured_triangles(texture, uv_triangle).nil?, 'perspective texture')
+    contract_check(Game::ThreeD.draw_textured_triangles(texture, uv_triangle, false).nil?, 'affine texture')
+    contract_check(Game::ThreeD.draw_textured_triangles(texture, []).nil?, 'empty texture batch')
+    [nil, [0], Array.new(257 * 15, 0)].each do |invalid|
+      caught = false
+      begin
+        Game::ThreeD.draw_textured_triangles(texture, invalid)
+      rescue ArgumentError
+        caught = true
+      end
+      contract_check(caught, 'invalid texture batch length')
+    end
+    [1.1, -0.1, 'uv'].each do |invalid|
+      values = uv_triangle.dup
+      values[3] = invalid
+      caught = false
+      begin
+        Game::ThreeD.draw_textured_triangles(texture, values)
+      rescue ArgumentError, TypeError
+        caught = true
+      end
+      contract_check(caught, 'invalid texture UV')
+    end
+    [0, 3].each do |index|
+      [Float::NAN, Float::INFINITY, -Float::INFINITY, 1.0e100].each do |invalid|
+        values = uv_triangle.dup
+        values[index] = invalid
+        caught = false
+        begin
+          Game::ThreeD.draw_textured_triangles(texture, values)
+        rescue ArgumentError
+          caught = true
+        end
+        contract_check(caught, 'non-finite texture XYZ/UV')
+      end
+    end
+  end
   contract_check(texture.width == 32, 'texture width')
   contract_check(texture.height == 32, 'texture height')
   texture.draw(16, 72)
@@ -502,6 +541,15 @@ def run_game_api_contract
       contract_check(Game::ThreeD.begin_frame.nil?, 'depth frame after switch')
       Game::Display.present
     end
+  end
+  if Game::ThreeD.respond_to?(:textures_supported?) && Game::ThreeD.textures_supported?
+    caught = false
+    begin
+      Game::ThreeD.draw_textured_triangles(texture, [])
+    rescue RuntimeError
+      caught = true
+    end
+    contract_check(caught, 'texture frame must begin')
   end
   contract_check(Game::ThreeD.set_resolution(160, 120).nil?, '3D resolution after present')
   contract_check(Game::ThreeD.set_viewport(0, 0, 320, 240).nil?, '3D viewport after present')

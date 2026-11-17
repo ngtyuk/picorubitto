@@ -126,6 +126,16 @@ ruby tools/build/workflow.rb engine
 組み込み文字の揃え方のように、両実行先で完全に同じ計算を使えるAPIは
 `picoruby-game-common/mrblib/`へ置き、契約テストで両バックエンドから呼び出します。
 
+## 実験用3Dテクスチャを評価するとき
+
+`ThreeD.textures_supported?`で試作APIを確認し、既存TextureとXYZUVのバッチを使います。
+UVを追加するときはクリップ生成頂点にも引き継ぎ、キー色の画素では深度を書きません。
+単色経路の最適化を同時に変更せず、`three_d_texture_test.py`と
+`tests/web/three-d-textures.html`で独立した参照計算と照合します。
+実機用ROMは`local-games/`で管理し、ROM・画像・UF2はコミットしません。
+遠近補正の有無、内部解像度、画像サイズ、描画量を揃えて測り、実機の結果が得られてから
+正式な任意機能化・保持モデル対応・最適化の範囲を決めます。
+
 ## 判断基準
 
 - ゲームコードは`Game` APIだけを使う。

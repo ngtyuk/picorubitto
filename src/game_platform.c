@@ -6620,3 +6620,5 @@ game_frame_tick(uint32_t fps)
   profile_begin_frame();
 #endif
 }
+
+#include "game_3d_texture.inc"
