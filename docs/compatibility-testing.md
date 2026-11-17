@@ -81,6 +81,33 @@ python3 -m http.server 8080 --bind 127.0.0.1
 ruby tools/fixtures/generate_test_font.rb
 ```
 
+## VM管理データの配置検査
+
+```sh
+python3 tests/native/vm_state_regression.py
+```
+
+実際のmrubyとPicoRubyのEstallocを組み合わせ、キャッシュ無効／256件の両方で
+PSRAM相当のヒープ配置と固定SRAM相当の配置を検査します。共通Ruby契約、配列・Hash・
+全256バイトの文字列操作・GCを実行し、VMを3回起動・終了します。
+通常オブジェクトとRubyスタックが既存ヒープを使うこと、状態と同サイズの通常確保・再確保、
+無効なヒープ、稼働中のVMの再初期化拒否も検査します。ASan/UBSanは検証用Cと実アロケータへ適用します。
+ホストのリンカーがGNU `--wrap`を持たないため、同じ入口を検証時のシンボル名で接続します。
+実機ELFでも`mrb_open_core`からラッパーへの接続とSRAM内の状態領域を確認します。
+
+```sh
+python3 tests/native/vm_state_regression.py \
+  --firmware-psram build/vm-state-test/firmware-psram \
+  --firmware-sram build/vm-state-test/firmware-sram --arm-toolchain "$ARM_TOOLCHAIN"
+```
+
+このモードではホストVMを再実行せず、両ELFのアロケータ接続、状態領域の配置・境界、
+画面・スプライト容量とスタック容量の一致、Cヒープの最低8KiBを検査します。
+
+両配置のUF2とWASMをビルドし、上記WASM契約と実機用統合ROM生成を行います。
+実機ではUSBの`state_region`・`state_address`、TFT、SD、入力、音声、COMMON API・
+SAVE・ASSET / GCを確認します。表示や速度を未確認の場合は完了報告に明記します。
+
 ## 実機の統合テストROM
 
 `workflow.rb checks`は、現在のソースとエンジンビルドで生成したホストコンパイラを使い、
@@ -232,6 +259,25 @@ ruby tools/build/workflow.rb checks --compare-3d
 フレーム時間の読み方とビルド設定は[性能メモ](performance-notes.md)を参照してください。
 
 ## ホスト回帰テスト
+
+本番用Releaseの既定はメソッド検索キャッシュ256件、VM管理データはPSRAMです。
+`vm_profile_test.rb`はRelease／Debug／WASMの省略時の解決、無効版との出力分離、
+通常・旧比較ビルドのホストコンパイラ選択を検査します。
+次で無効・256件の実VMを別々に検証します。
+
+```sh
+ruby tests/native/vm_profile_test.rb
+GAME_METHOD_CACHE_SIZE=0 python3 tests/native/minimum_profile_regression.py
+GAME_METHOD_CACHE_SIZE=256 python3 tests/native/minimum_profile_regression.py
+python3 tests/native/method_cache_regression.py
+```
+
+後者のVMは`build/tests/minimum-profile-method-cache256/`へ作ります。
+`method_cache_regression.py`は対応するヘッダーでCクライアントをリンクし、VM状態のサイズ差、
+有効時に実際のキャッシュが使われること、メソッドの再定義・別名・削除・継承・include／prepend・
+singleton・GC後の結果を確認します。共通言語契約にも同じ呼び出しを含め、WASMと実機用ROMで実行します。
+実機では両UF2の`VM:`と`CLOCK:`、ROMのFNV-1aを照合し、同じ操作・同じROMで比較します。
+起動・TFT・SD・入力・音声と実際の速度は、ホスト検証やWASM契約の合格とは別に確認します。
 
 Ruby、Python 3とC/C++コンパイラが必要です。Cの回帰テストには
 AddressSanitizer／UndefinedBehaviorSanitizerに対応したコンパイラを使います。

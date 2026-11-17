@@ -41,6 +41,8 @@ WeActでI2SのDINをGP28、音量ダイヤルをGP42、出力上限を50%にす�
 | 音声出力 | `--audio-output pwm\|i2s`、`--volume-knob`、`--audio-max-gain 0..100` |
 | I2S配線 | `--i2s-bclk GPIO`、`--i2s-data GPIO`。組み合わせは[実機ガイド](hardware.md)参照 |
 | VM | `--vm-opt size\|speed`。通常のReleaseはspeed、Debugはsize |
+| メソッド検索キャッシュ | `--method-cache 0\|64\|128\|256\|512\|1024`。Releaseの既定は256、Debugは0（無効）、実機専用 |
+| VM管理データの配置比較 | `--vm-state psram\|sram`。既定はpsram、sramは実機専用の比較設定 |
 | ビルド対象 | `--firmware-only`、`--wasm-only`、`--no-emulator-runtime` |
 | パス | `--picoruby-root`、`--build-root`、`--firmware-dir`、`--arm-toolchain` |
 | 調査 | `--debug`、`--profiling` |
@@ -137,7 +139,8 @@ ruby tests/native/clock_profile_test.rb
 
 ## VM最適化の比較をするとき
 
-描画設定を固定し、RP2350のmrubyコアだけを比較します。標準Releaseはspeedです。
+描画設定を固定し、RP2350のmrubyコアだけを比較します。標準Releaseはspeed、
+メソッドキャッシュ256件、VM管理データはPSRAMです。
 
 ```sh
 ruby tools/build/workflow.rb engine --vm-opt size
@@ -154,9 +157,55 @@ speedのUF2は通常の`build/firmware-release/pico_ruby_gaming.uf2`、クロス
 同じ`--firmware-dir`を指定して切り替えた場合も、リンク先のライブラリと起動ログを確認します。
 `gaming-build.json`の設定差でクロスターゲットを作り直すため、別構成のオブジェクトを流用しません。
 実際のコンパイル引数は各オブジェクト隣の`.o.flags`で確認できます。
-DebugとWASMだけのビルドでは、省略時はsizeに解決します。
+DebugとWASMだけのビルドでは、省略時はsizeに解決します。Debugのキャッシュは0で、
+クロス出力には`-method-cache-off`が付きます。WASMのキャッシュ設定は上流のままです。
 WASM・ホストの最適化は比較要因に含めず、共通契約を確認します。`--wasm-only --vm-opt speed`は拒否します。
 手順とログの範囲は[性能の計測](performance-notes.md#計測する)を参照してください。
+
+## メソッド検索キャッシュを比較するとき
+
+ゲームROMと実機設定を固定して、キャッシュ無効と256件のUF2を別ディレクトリへ作ります。
+次の両方がUF2とWASMをビルドします。依存環境は上記と同じです。
+
+```sh
+ruby tools/build/workflow.rb engine --vm-opt speed --method-cache 0 \
+  --board weact_studio_rp2350b_core --clock-profile weact-300 \
+  --audio-output i2s --volume-knob --i2s-data 28 --audio-max-gain 50 --battery-warning \
+  --firmware-dir build/method-cache-test/firmware-off
+ruby tools/build/workflow.rb engine --vm-opt speed --method-cache 256 \
+  --board weact_studio_rp2350b_core --clock-profile weact-300 \
+  --audio-output i2s --volume-knob --i2s-data 28 --audio-max-gain 50 --battery-warning \
+  --firmware-dir build/method-cache-test/firmware-256
+python3 tests/native/method_cache_regression.py
+ruby tools/build/workflow.rb checks
+```
+
+Releaseの256件は通常のUF2出力先と`build/mruby-vm-speed/`を使います。
+`--method-cache 0`のUF2とクロス出力には`-method-cache-off`が付きます。
+その他の比較件数には`-method-cache512`等が付き、`mrb_state`の異なるオブジェクトを混ぜません。
+ビルド記録で以前のキャッシュ無効ライブラリを検出した場合は、クロスターゲットだけを再生成します。
+ホストコンパイラは通常ビルドを優先し、以前の比較ビルド内のものも利用できます。
+起動ログの`VM: profile=speed ... method_cache=0/256 state_bytes=...`でUF2を区別します。
+ROMを再生成する必要はありません。比較中は同じROMのFNV-1aを確認します。
+
+## VM管理データのSRAM配置を比較するとき
+
+`--vm-state sram`は`mrb_state`だけを内蔵SRAMへ配置する実機用の比較設定です。
+ゲーム、キャッシュ件数、画面・音声・クロックを固定し、上記のキャッシュ256件のコマンドへ
+`--vm-state psram`と`--vm-state sram`をそれぞれ追加します。出力は別の
+`--firmware-dir`へ指定し、両方のUF2とWASMをビルドします。省略時のSRAM版の出力先には
+`-vm-state-sram`が付きます。ROMの再生成は不要です。
+
+```sh
+python3 tests/native/vm_state_regression.py
+ruby tools/build/workflow.rb checks
+```
+
+起動ログの`state_region`と`state_address`を確認します。SRAMは`0x200...`、PSRAMは
+`0x110...`です。ホスト検証のアドレス・時間を実機の値として扱いません。
+SRAM版はCヒープを最低8KiB、Core 0/1スタックを16/4KiB残してリンクします。
+キャッシュを大きくするなどしてSRAMが不足する構成はリンク時に失敗します。
+実機での効果が未測定の場合は、配置の確認と高速化の確認を分けて報告します。
 
 ## ゲームを変更したとき
 

@@ -37,6 +37,15 @@ IO全体を必要としない共通の言語機能は、`picoruby-game-common`�
 
 ### 3. RP2350を実装する
 
+VM状態の配置だけを変える実験は`src/game_vm.c`とCMakeの`GAME_VM_STATE_REGION`で扱います。
+依存ライブラリを書き換えず、既存アロケータへの委譲・状態の解放・再起動とメモリ予算を検査します。
+`--vm-state sram`の手順は[開発ガイド](agent-development.md#vm管理データのsram配置を比較するとき)を参照してください。
+
+本番用Releaseのメソッド検索キャッシュは256件、VM状態はPSRAMです。
+メソッド検索キャッシュのように`mrb_state`のレイアウトが変わる設定は、ビルド全体と
+CMakeの定義を揃えます。`tools/build/vm_profile.rb`の件数検証・別出力・ビルド記録を使い、
+一部のgemだけへフラグを足しません。WASMの最適化設定は独立でも、Rubyの結果は共通契約で検証します。
+
 ハードウェア処理は`src/`または`mrbgems/picoruby-game/`に追加します。
 
 1. 必要なら`include/game_platform.h`に内部C境界を追加する。

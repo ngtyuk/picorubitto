@@ -21,9 +21,20 @@ class BuildOptionsTest < Minitest::Test
     output, status = Open3.capture2('ruby', WORKFLOW, 'engine', '--help')
     assert status.success?
     %w[--board --audio-output --audio-max-gain --volume-knob --i2s-bclk
-       --i2s-data --vm-opt --tft-clock --profiling --clock-profile --clock-diagnostics
+       --i2s-data --vm-opt --method-cache --tft-clock --profiling --clock-profile --clock-diagnostics
        --firmware-only --wasm-only].each do |option|
       assert_includes output, option
     end
+  end
+
+  def test_method_cache_rejects_invalid_sizes_and_wasm_only
+    [3, -1, 2048].each do |size|
+      _, error, status = Open3.capture3('ruby', WORKFLOW, 'engine', '--method-cache', size.to_s)
+      refute status.success?
+      assert_includes error, 'method cache entries must be'
+    end
+    _, error, status = Open3.capture3('ruby', WORKFLOW, 'engine', '--wasm-only', '--method-cache', '256')
+    refute status.success?
+    assert_includes error, '--method-cache requires an RP2350 firmware build'
   end
 end

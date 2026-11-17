@@ -68,6 +68,48 @@ DebugとWASMだけのビルドでは、省略時はsizeに解決します。
 CMakeは`libmruby.a`をフルパスでリンクし、ファイルの更新をELF・UF2の依存関係として
 追跡します。Cバインディングだけを更新した増分ビルドでも、最新ライブラリで再リンクします。
 
+### メソッド検索キャッシュ
+
+RP2350のReleaseはメソッド検索キャッシュ256件が既定です。省略時はworkflowと
+`mruby_config.rb`の両方が`VMProfile.method_cache_default_for`から256を選びます。
+Debugの省略時は0（無効）です。明示した0はReleaseでも無効として保持します。
+64・128・512・1024件も比較用に選択でき、WASMだけのビルドには有効件数を指定できません。
+WASMのキャッシュは上流の既定設定を維持します。Ruby／Game APIやROM形式は変えません。
+
+`MRB_METHOD_CACHE_SIZE`をビルド全体へ指定すると、mrubyのヘッダーが最小構成の
+`MRB_NO_METHOD_CACHE`を解除します。`sizeof(mrb_state)`が変わるため、VMコアだけでなく
+全gemとCMakeでコンパイルする実機コードを揃えます。CMakeは`gaming-build.json`の
+`method_cache_entries`から同じ定義を取り込み、起動コードでも設定の一致をコンパイル時に確認します。
+件数を持たない古い記録ではリンクせず、workflowで再ビルドします。
+
+標準の256件はクロス出力`build/mruby-vm-speed/`、UF2は通常の出力先を使います。
+無効版のクロス出力には`-method-cache-off`、ReleaseのUF2にも同じ接尾辞を付けます。
+別件数には`-method-cache512`等を付け、以前の無効な通常ライブラリもビルド記録で識別して
+再生成します。ホストコンパイラは通常の出力を優先し、旧比較出力もフォールバックに使います。
+起動ログの`VM:`は`method_cache=0/256`と`state_bytes`も表示します。
+RP2350の256件ではキャッシュが5120バイト、VM状態が9272→14392バイトです。
+通常のVM状態はPSRAMのVMヒープから確保します。
+
+### VM管理データの配置比較
+
+`engine --vm-state sram`は実機の`mrb_state`を8バイト境界の固定SRAM領域へ配置します。
+メソッド・インスタンス変数・定数キャッシュ、GC管理情報などが対象です。
+Rubyオブジェクト、配列・Hash・文字列の内容、Rubyスタックは引き続きPSRAMを使います。
+画面バッファ、深度バッファ、64KiBのスプライトキャッシュは同じ容量を維持します。
+既定の`--vm-state psram`、WASM、Ruby／Game API、ROM形式とVMのABIは変えません。
+
+`src/game_vm.c`から既存の`mrb_open_with_custom_alloc`を呼び、SRAM版だけGNU ldの
+`--wrap=mrb_basic_alloc_func`を使います。`mrb_open_core`の最初の確保が
+`sizeof(mrb_state)`であることを確認して固定領域を渡し、その他は既存Estallocへ委譲します。
+同じサイズの通常の確保を誤って固定領域へ渡しません。状態の解放はPSRAMアロケータへ
+渡さず、次のVM起動で再利用します。同時に2つのコンソールVMを起動することは拒否します。
+依存checkoutのソースは変更しません。配置切替はCMake側だけで、同じクロスライブラリを使います。
+
+256件キャッシュでは状態全体の14392バイトをSRAMへ移し、PSRAMヒープの同領域を解放します。
+Cヒープの最低予約はSRAM版で8KiB、通常版で1KiB、Core 0/1のスタック予約は16/4KiBです。
+予約が収まらない構成はリンカーが拒否します。起動ログの`state_region`と実ポインタの
+`state_address`で配置を区別し、実機での性能は別途比較します。
+
 ## 共通部分
 
 組み込み文字の`Game::Display.text_aligned`は共通gemのRuby実装で基準座標から

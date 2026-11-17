@@ -8,7 +8,8 @@ import tempfile
 root = Path(__file__).resolve().parents[2]
 picoruby = Path(os.environ.get('PICORUBY_ROOT', root / 'deps/picoruby'))
 mruby = picoruby / 'mrbgems/picoruby-mruby/lib/mruby'
-output = root / 'build/tests/minimum-profile'
+cache = int(os.environ.get('GAME_METHOD_CACHE_SIZE', '0'))
+output = root / 'build/tests' / ('minimum-profile' + (f'-method-cache{cache}' if cache else ''))
 output.mkdir(parents=True, exist_ok=True)
 # Rake writes a lock beside its config; keep that generated file under build/.
 configuration = output / 'minimum_profile.rb'

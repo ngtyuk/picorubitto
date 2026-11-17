@@ -7,13 +7,25 @@
 #include <mruby/debug.h>
 #include <mruby/dump.h>
 
-#include "estalloc_mruby.h"
+#include "game_vm.h"
 #include "game_platform.h"
 #include "game_clock.h"
 #include "version.h"
 
 /* The Prism compiler owns this bridge pointer in PicoRuby 4.x. */
 extern mrb_state *global_mrb;
+
+#if GAME_METHOD_CACHE_SIZE == 0
+#ifndef MRB_NO_METHOD_CACHE
+#error "Firmware and VM method cache settings differ"
+#endif
+#else
+#ifdef MRB_NO_METHOD_CACHE
+#error "Firmware method cache was not enabled"
+#endif
+_Static_assert(MRB_METHOD_CACHE_SIZE == GAME_METHOD_CACHE_SIZE,
+               "Firmware and VM method cache sizes differ");
+#endif
 
 static void
 fatal_error(const char *title, const char *detail)
@@ -39,7 +51,9 @@ main(void)
   printf("PicoRubitto boot\n");
   printf("PicoRuby %s\n", picorb_version_with_build_info());
   game_clock_report();
-  printf("VM: profile=%s scope=picoruby-mruby\n", GAME_VM_PROFILE);
+  printf("VM: profile=%s scope=picoruby-mruby method_cache=%u state_bytes=%u state_region=%s\n",
+         GAME_VM_PROFILE, (unsigned)GAME_METHOD_CACHE_SIZE, (unsigned)sizeof(mrb_state),
+         GAME_VM_STATE_REGION);
   printf("STACK: core0=%u core1=%u bytes\n",
          (unsigned)PICO_STACK_SIZE, (unsigned)PICO_CORE1_STACK_SIZE);
 
@@ -59,13 +73,13 @@ main(void)
   printf("ROM: fnv1a=%08lx\n", (unsigned long)rom_checksum);
   printf("VM: initializing\n");
   uint32_t vm_started = to_ms_since_boot(get_absolute_time());
-  mrb_state *mrb = mrb_open_with_custom_alloc(game_vm_heap(), game_vm_heap_size());
+  mrb_state *mrb = game_vm_open(game_vm_heap(), game_vm_heap_size());
   if (mrb == NULL || mrb->exc != NULL) {
-    fatal_error("VM", "cannot allocate PicoRuby VM in PSRAM");
+    fatal_error("VM", "cannot initialize PicoRuby VM");
   }
   global_mrb = mrb;
-  printf("VM: ready init_ms=%lu; loading cartridge\n",
-         (unsigned long)(to_ms_since_boot(get_absolute_time()) - vm_started));
+  printf("VM: ready init_ms=%lu state_address=%p; loading cartridge\n",
+         (unsigned long)(to_ms_since_boot(get_absolute_time()) - vm_started), (void *)mrb);
 
   mrb_load_irep_buf(mrb, rom, rom_size);
   if (mrb->exc != NULL) {
