@@ -63,7 +63,8 @@ MRuby::CrossBuild.new('pico-gaming') do |conf|
   # mruby resolves and builds the matching host mrbc.
   conf.picoruby
   PicoRubyGaming::VMProfile.configure(conf, vm_profile)
-  PicoRubyGaming::VMProfile.configure_method_cache(conf, ENV.fetch('GAME_METHOD_CACHE_SIZE', '0'))
+  PicoRubyGaming::VMProfile.configure_method_cache(conf,
+    ENV.fetch('GAME_METHOD_CACHE_SIZE', PicoRubyGaming::VMProfile.method_cache_default_for(debug: vm_debug).to_s))
   conf.cc.include_paths << File.join(picoruby_root, 'include')
   conf.cc.include_paths << File.join(picoruby_root, 'mrbgems', 'mruby-compiler', 'include')
   conf.cc.include_paths << File.join(picoruby_root, 'mrbgems', 'mruby-compiler', 'lib', 'prism', 'include')

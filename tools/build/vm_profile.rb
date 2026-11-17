@@ -5,11 +5,12 @@ require 'json'
 require 'fileutils'
 
 module PicoRubyGaming
-  # VM optimization changes only picoruby-mruby's compiler. The optional method
+  # VM optimization changes only picoruby-mruby's compiler. The method
   # cache changes mrb_state's layout, so its define must apply to every gem.
   module VMProfile
     NAMES = %w[size speed].freeze
     DEFAULT = 'speed'.freeze
+    DEFAULT_METHOD_CACHE_SIZE = 256
     METHOD_CACHE_SIZES = [0, 64, 128, 256, 512, 1024].freeze
     module_function
 
@@ -23,15 +24,24 @@ module PicoRubyGaming
       firmware && !debug ? DEFAULT : 'size'
     end
 
+    def method_cache_default_for(firmware: true, debug: false)
+      firmware && !debug ? DEFAULT_METHOD_CACHE_SIZE : 0
+    end
+
     def host_compiler(root)
       profiles = [DEFAULT, 'size'].uniq
       candidates = profiles.map do |name|
         File.join(build_root(root, name), 'mrbc', 'default', 'bin', 'mrbc')
       end
-      METHOD_CACHE_SIZES.drop(1).each do |size|
+      (METHOD_CACHE_SIZES - [DEFAULT_METHOD_CACHE_SIZE]).each do |size|
         profiles.each do |name|
           candidates << File.join(build_root(root, name, method_cache: size), 'mrbc', 'default', 'bin', 'mrbc')
         end
+      end
+      # Earlier comparison builds kept cache256 in a suffixed directory.
+      profiles.each do |name|
+        base = name == 'size' ? 'mruby' : 'mruby-vm-speed'
+        candidates << File.join(root, "#{base}-method-cache256", 'mrbc', 'default', 'bin', 'mrbc')
       end
       candidates.find { |path| File.file?(path) } || candidates.first
     end
@@ -65,12 +75,13 @@ module PicoRubyGaming
       conf.defines << "MRB_METHOD_CACHE_SIZE=#{size}" if size.positive?
     end
 
-    def method_cache_suffix(value)
+    def method_cache_suffix(value, default: DEFAULT_METHOD_CACHE_SIZE)
       size = method_cache_size(value)
-      size.zero? ? '' : "-method-cache#{size}"
+      return '' if size == method_cache_size(default)
+      size.zero? ? '-method-cache-off' : "-method-cache#{size}"
     end
 
-    def build_root(root, name, method_cache: 0)
+    def build_root(root, name, method_cache: DEFAULT_METHOD_CACHE_SIZE)
       validate(name)
       File.join(root, (name == 'size' ? 'mruby' : 'mruby-vm-speed') + method_cache_suffix(method_cache))
     end

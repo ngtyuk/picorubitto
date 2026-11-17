@@ -41,7 +41,7 @@ WeActでI2SのDINをGP28、音量ダイヤルをGP42、出力上限を50%にす�
 | 音声出力 | `--audio-output pwm\|i2s`、`--volume-knob`、`--audio-max-gain 0..100` |
 | I2S配線 | `--i2s-bclk GPIO`、`--i2s-data GPIO`。組み合わせは[実機ガイド](hardware.md)参照 |
 | VM | `--vm-opt size\|speed`。通常のReleaseはspeed、Debugはsize |
-| メソッド検索キャッシュの比較 | `--method-cache 0\|64\|128\|256\|512\|1024`。既定は0（無効）、実機専用 |
+| メソッド検索キャッシュ | `--method-cache 0\|64\|128\|256\|512\|1024`。Releaseの既定は256、Debugは0（無効）、実機専用 |
 | VM管理データの配置比較 | `--vm-state psram\|sram`。既定はpsram、sramは実機専用の比較設定 |
 | ビルド対象 | `--firmware-only`、`--wasm-only`、`--no-emulator-runtime` |
 | パス | `--picoruby-root`、`--build-root`、`--firmware-dir`、`--arm-toolchain` |
@@ -139,7 +139,8 @@ ruby tests/native/clock_profile_test.rb
 
 ## VM最適化の比較をするとき
 
-描画設定を固定し、RP2350のmrubyコアだけを比較します。標準Releaseはspeedです。
+描画設定を固定し、RP2350のmrubyコアだけを比較します。標準Releaseはspeed、
+メソッドキャッシュ256件、VM管理データはPSRAMです。
 
 ```sh
 ruby tools/build/workflow.rb engine --vm-opt size
@@ -156,7 +157,8 @@ speedのUF2は通常の`build/firmware-release/pico_ruby_gaming.uf2`、クロス
 同じ`--firmware-dir`を指定して切り替えた場合も、リンク先のライブラリと起動ログを確認します。
 `gaming-build.json`の設定差でクロスターゲットを作り直すため、別構成のオブジェクトを流用しません。
 実際のコンパイル引数は各オブジェクト隣の`.o.flags`で確認できます。
-DebugとWASMだけのビルドでは、省略時はsizeに解決します。
+DebugとWASMだけのビルドでは、省略時はsizeに解決します。Debugのキャッシュは0で、
+クロス出力には`-method-cache-off`が付きます。WASMのキャッシュ設定は上流のままです。
 WASM・ホストの最適化は比較要因に含めず、共通契約を確認します。`--wasm-only --vm-opt speed`は拒否します。
 手順とログの範囲は[性能の計測](performance-notes.md#計測する)を参照してください。
 
@@ -178,9 +180,11 @@ python3 tests/native/method_cache_regression.py
 ruby tools/build/workflow.rb checks
 ```
 
-`--firmware-dir`を省略すると、有効時の通常出力先に`-method-cache256`が加わります。
-クロスライブラリも別配置で、`mrb_state`の異なるオブジェクトを混ぜません。
-通常ビルドのホストコンパイラがない場合、契約ROM生成はキャッシュ比較ビルド内のものも利用できます。
+Releaseの256件は通常のUF2出力先と`build/mruby-vm-speed/`を使います。
+`--method-cache 0`のUF2とクロス出力には`-method-cache-off`が付きます。
+その他の比較件数には`-method-cache512`等が付き、`mrb_state`の異なるオブジェクトを混ぜません。
+ビルド記録で以前のキャッシュ無効ライブラリを検出した場合は、クロスターゲットだけを再生成します。
+ホストコンパイラは通常ビルドを優先し、以前の比較ビルド内のものも利用できます。
 起動ログの`VM: profile=speed ... method_cache=0/256 state_bytes=...`でUF2を区別します。
 ROMを再生成する必要はありません。比較中は同じROMのFNV-1aを確認します。
 

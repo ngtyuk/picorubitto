@@ -260,10 +260,14 @@ ruby tools/build/workflow.rb checks --compare-3d
 
 ## ホスト回帰テスト
 
-メソッド検索キャッシュの比較設定は、次で無効・256件の実VMを別々に検証します。
+本番用Releaseの既定はメソッド検索キャッシュ256件、VM管理データはPSRAMです。
+`vm_profile_test.rb`はRelease／Debug／WASMの省略時の解決、無効版との出力分離、
+通常・旧比較ビルドのホストコンパイラ選択を検査します。
+次で無効・256件の実VMを別々に検証します。
 
 ```sh
-python3 tests/native/minimum_profile_regression.py
+ruby tests/native/vm_profile_test.rb
+GAME_METHOD_CACHE_SIZE=0 python3 tests/native/minimum_profile_regression.py
 GAME_METHOD_CACHE_SIZE=256 python3 tests/native/minimum_profile_regression.py
 python3 tests/native/method_cache_regression.py
 ```

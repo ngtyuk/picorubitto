@@ -75,7 +75,7 @@ def engine_workflow(argv)
     arm_toolchain: DEFAULT_ARM_TOOLCHAIN,
     build_type: 'Release',
     vm_opt: nil,
-    method_cache: 0,
+    method_cache: nil,
     vm_state: 'psram',
     clock_profile: 'stock',
     clock_diagnostics: false,
@@ -107,7 +107,7 @@ def engine_workflow(argv)
     opts.on('--debug', 'build a Debug firmware') { options[:build_type] = 'Debug' }
     opts.on('--vm-opt PROFILE', PicoRubyGaming::VMProfile::NAMES,
             'RP2350 mruby core: speed (-O2, release default) or size (-Os)') { |value| options[:vm_opt] = value }
-    opts.on('--method-cache ENTRIES', Integer, 'RP2350 method cache: 0 (default), 64, 128, 256, 512, 1024') do |value|
+    opts.on('--method-cache ENTRIES', Integer, 'RP2350 method cache: 256 (release default), 0 disables; 64, 128, 512, 1024') do |value|
       options[:method_cache] = value
     end
     opts.on('--vm-state REGION', %w[psram sram], 'RP2350 VM state: psram (default) or sram (comparison)') do |value|
@@ -151,6 +151,8 @@ def engine_workflow(argv)
   parser.parse!(argv)
   vm_debug = options[:build_type] == 'Debug' || !!(ENV['PICORUBY_DEBUG'] || ENV['PICORB_DEBUG'])
   options[:vm_opt] ||= PicoRubyGaming::VMProfile.default_for(firmware: options[:firmware], debug: vm_debug)
+  options[:method_cache] ||= PicoRubyGaming::VMProfile.method_cache_default_for(
+    firmware: options[:firmware], debug: vm_debug)
   if options[:clock_profile] != 'stock'
     fail_with('--clock-profile requires WeAct RP2350B Core') unless options[:board] == 'weact_studio_rp2350b_core'
     fail_with('--clock-profile requires an RP2350 firmware build') unless options[:firmware]
@@ -209,7 +211,8 @@ def engine_workflow(argv)
     firmware_suffix = options[:board] == DEFAULT_PICO_BOARD ? '' : "-#{options[:board].tr('_', '-')}"
     firmware_suffix += PicoRubyGaming::VMProfile.firmware_suffix(options[:vm_opt],
       default: PicoRubyGaming::VMProfile.default_for(debug: vm_debug))
-    firmware_suffix += PicoRubyGaming::VMProfile.method_cache_suffix(options[:method_cache])
+    firmware_suffix += PicoRubyGaming::VMProfile.method_cache_suffix(options[:method_cache],
+      default: PicoRubyGaming::VMProfile.method_cache_default_for(debug: vm_debug))
     firmware_suffix += '-vm-state-sram' if options[:vm_state] == 'sram'
     firmware_suffix += "-#{options[:clock_profile]}" unless options[:clock_profile] == 'stock'
     firmware_suffix += '-clock-check' if options[:clock_diagnostics]

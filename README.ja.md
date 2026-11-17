@@ -140,6 +140,8 @@ ruby tools/build/workflow.rb engine
 
 既定ボードはPimoroni Pico Plus 2です。通常のReleaseはRuby VMを速度優先でビルドします
 （`--vm-opt speed`、`-O2`）。サイズ優先は`--vm-opt size`で選べます。Debugの既定はsizeです。
+Releaseのメソッド検索キャッシュは256件、VM管理データはPSRAMです。
+無効版との比較は`--method-cache 0`で指定でき、Debugのキャッシュは既定で無効です。
 次を生成します。
 
 | 成果物 | 場所 |

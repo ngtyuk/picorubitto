@@ -142,7 +142,12 @@ ruby tools/build/workflow.rb engine
 
 The default board is Pimoroni Pico Plus 2. Release firmware builds the Ruby VM
 with speed optimization (`--vm-opt speed`, `-O2`). Use `--vm-opt size` for
-size optimization; Debug builds default to `size`. This produces:
+size optimization; Debug builds default to `size`.
+Release firmware also enables a 256-entry method lookup cache and keeps VM state
+in PSRAM. Use `--method-cache 0` for a comparison build with the cache disabled;
+Debug defaults to a disabled cache.
+
+This produces:
 
 | Output | Location |
 | --- | --- |
