@@ -42,6 +42,7 @@ WeActでI2SのDINをGP28、音量ダイヤルをGP42、出力上限を50%にす�
 | I2S配線 | `--i2s-bclk GPIO`、`--i2s-data GPIO`。組み合わせは[実機ガイド](hardware.md)参照 |
 | VM | `--vm-opt size\|speed`。通常のReleaseはspeed、Debugはsize |
 | メソッド検索キャッシュの比較 | `--method-cache 0\|64\|128\|256\|512\|1024`。既定は0（無効）、実機専用 |
+| VM管理データの配置比較 | `--vm-state psram\|sram`。既定はpsram、sramは実機専用の比較設定 |
 | ビルド対象 | `--firmware-only`、`--wasm-only`、`--no-emulator-runtime` |
 | パス | `--picoruby-root`、`--build-root`、`--firmware-dir`、`--arm-toolchain` |
 | 調査 | `--debug`、`--profiling` |
@@ -182,6 +183,25 @@ ruby tools/build/workflow.rb checks
 通常ビルドのホストコンパイラがない場合、契約ROM生成はキャッシュ比較ビルド内のものも利用できます。
 起動ログの`VM: profile=speed ... method_cache=0/256 state_bytes=...`でUF2を区別します。
 ROMを再生成する必要はありません。比較中は同じROMのFNV-1aを確認します。
+
+## VM管理データのSRAM配置を比較するとき
+
+`--vm-state sram`は`mrb_state`だけを内蔵SRAMへ配置する実機用の比較設定です。
+ゲーム、キャッシュ件数、画面・音声・クロックを固定し、上記のキャッシュ256件のコマンドへ
+`--vm-state psram`と`--vm-state sram`をそれぞれ追加します。出力は別の
+`--firmware-dir`へ指定し、両方のUF2とWASMをビルドします。省略時のSRAM版の出力先には
+`-vm-state-sram`が付きます。ROMの再生成は不要です。
+
+```sh
+python3 tests/native/vm_state_regression.py
+ruby tools/build/workflow.rb checks
+```
+
+起動ログの`state_region`と`state_address`を確認します。SRAMは`0x200...`、PSRAMは
+`0x110...`です。ホスト検証のアドレス・時間を実機の値として扱いません。
+SRAM版はCヒープを最低8KiB、Core 0/1スタックを16/4KiB残してリンクします。
+キャッシュを大きくするなどしてSRAMが不足する構成はリンク時に失敗します。
+実機での効果が未測定の場合は、配置の確認と高速化の確認を分けて報告します。
 
 ## ゲームを変更したとき
 

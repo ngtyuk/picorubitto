@@ -12,6 +12,11 @@ set(GAME_TFT_PIPELINE OFF)
 unset(GAME_TFT_CORE1 CACHE)
 set(GAME_TFT_CORE1 ON)
 option(GAME_ENABLE_PROFILING "Print frame timing summaries over USB serial" OFF)
+set(GAME_VM_STATE_REGION psram CACHE STRING "Ruby VM state placement: psram or sram")
+set_property(CACHE GAME_VM_STATE_REGION PROPERTY STRINGS psram sram)
+if(NOT GAME_VM_STATE_REGION MATCHES "^(psram|sram)$")
+  message(FATAL_ERROR "GAME_VM_STATE_REGION must be psram or sram")
+endif()
 unset(GAME_FRAMEBUFFER_IN_SRAM CACHE)
 set(GAME_FRAMEBUFFER_IN_SRAM ON)
 unset(GAME_ENABLE_DIRTY_RECT CACHE)
@@ -122,6 +127,7 @@ set(PICORUBY_PLATFORM_SOURCES
 
 add_executable(pico_ruby_gaming
   src/main.c
+  src/game_vm.c
   src/game_clock.c
   src/game_platform.c
   src/game_audio_dial.c
@@ -166,6 +172,7 @@ target_compile_definitions(pico_ruby_gaming PRIVATE
   GAME_AUDIO_I2S_DATA_PIN=${GAME_AUDIO_I2S_DATA_PIN}
   GAME_VM_PROFILE="${GAME_VM_PROFILE}"
   GAME_METHOD_CACHE_SIZE=${GAME_METHOD_CACHE_SIZE}
+  GAME_VM_STATE_REGION="${GAME_VM_STATE_REGION}"
   PICO_RP2350=1
   GAME_TFT_SPI_HZ=${GAME_TFT_SPI_HZ}
   GAME_TFT_STRIPE_ROWS=${GAME_TFT_STRIPE_ROWS}
@@ -193,6 +200,12 @@ target_compile_definitions(pico_ruby_gaming PRIVATE
 )
 if(NOT GAME_METHOD_CACHE_SIZE STREQUAL "0")
   target_compile_definitions(pico_ruby_gaming PRIVATE MRB_METHOD_CACHE_SIZE=${GAME_METHOD_CACHE_SIZE})
+endif()
+if(GAME_VM_STATE_REGION STREQUAL "sram")
+  target_compile_definitions(pico_ruby_gaming PRIVATE GAME_VM_STATE_SRAM=1)
+  target_link_options(pico_ruby_gaming PRIVATE -Wl,--wrap=mrb_basic_alloc_func)
+else()
+  target_compile_definitions(pico_ruby_gaming PRIVATE GAME_VM_STATE_SRAM=0)
 endif()
 if(GAME_TFT_DMA_FROM_PSRAM)
   target_compile_definitions(pico_ruby_gaming PRIVATE GAME_TFT_DMA_FROM_PSRAM=1)
@@ -327,8 +340,14 @@ target_link_options(pico_ruby_gaming PRIVATE -Wl,--gc-sections)
 pico_set_linker_script_var(pico_ruby_gaming RAM_LENGTH 0x7c000)
 pico_set_linker_script_var(pico_ruby_gaming SCRATCH_Y_ORIGIN 0x2007c000)
 pico_set_linker_script_var(pico_ruby_gaming SCRATCH_Y_LENGTH 0x4000)
+set(GAME_C_HEAP_MIN 0x0400)
+if(GAME_VM_STATE_REGION STREQUAL "sram")
+  # Keep a minimum C heap after the new static reservation; the linker rejects
+  # configurations that would consume this or the separate core stacks.
+  set(GAME_C_HEAP_MIN 0x2000)
+endif()
 target_compile_definitions(pico_ruby_gaming PRIVATE
   PICO_STACK_SIZE=0x4000
   PICO_CORE1_STACK_SIZE=0x1000
-  PICO_HEAP_SIZE=0x0400
+  PICO_HEAP_SIZE=${GAME_C_HEAP_MIN}
 )

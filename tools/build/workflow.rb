@@ -76,6 +76,7 @@ def engine_workflow(argv)
     build_type: 'Release',
     vm_opt: nil,
     method_cache: 0,
+    vm_state: 'psram',
     clock_profile: 'stock',
     clock_diagnostics: false,
     audio_output: 'pwm',
@@ -108,6 +109,9 @@ def engine_workflow(argv)
             'RP2350 mruby core: speed (-O2, release default) or size (-Os)') { |value| options[:vm_opt] = value }
     opts.on('--method-cache ENTRIES', Integer, 'RP2350 method cache: 0 (default), 64, 128, 256, 512, 1024') do |value|
       options[:method_cache] = value
+    end
+    opts.on('--vm-state REGION', %w[psram sram], 'RP2350 VM state: psram (default) or sram (comparison)') do |value|
+      options[:vm_state] = value
     end
     opts.on('--audio-output OUTPUT', %w[pwm i2s], 'audio transport (default: pwm)') { |value| options[:audio_output] = value }
     opts.on('--audio-max-gain PERCENT', Integer, 'output gain ceiling: 0..100 (default: 100)') { |value| options[:audio_max_gain] = value }
@@ -182,6 +186,7 @@ def engine_workflow(argv)
   end
   fail_with('--vm-opt speed requires an RP2350 firmware build') if options[:vm_opt] == 'speed' && !options[:firmware]
   fail_with('--method-cache requires an RP2350 firmware build') if options[:method_cache].positive? && !options[:firmware]
+  fail_with('--vm-state sram requires an RP2350 firmware build') if options[:vm_state] == 'sram' && !options[:firmware]
 
   if options[:tft_clock_mhz] && !options[:tft_clock_mhz].between?(1, 100)
     fail_with('TFT clock must be between 1 and 100 MHz')
@@ -205,6 +210,7 @@ def engine_workflow(argv)
     firmware_suffix += PicoRubyGaming::VMProfile.firmware_suffix(options[:vm_opt],
       default: PicoRubyGaming::VMProfile.default_for(debug: vm_debug))
     firmware_suffix += PicoRubyGaming::VMProfile.method_cache_suffix(options[:method_cache])
+    firmware_suffix += '-vm-state-sram' if options[:vm_state] == 'sram'
     firmware_suffix += "-#{options[:clock_profile]}" unless options[:clock_profile] == 'stock'
     firmware_suffix += '-clock-check' if options[:clock_diagnostics]
     firmware_suffix += '-audio-i2s' if options[:audio_output] == 'i2s'
@@ -280,6 +286,7 @@ def engine_workflow(argv)
     ]
     cmake_args.concat([
       "-DGAME_ENABLE_PROFILING=#{options[:profiling] ? 'ON' : 'OFF'}",
+      "-DGAME_VM_STATE_REGION=#{options[:vm_state]}",
       "-DGAME_CLOCK_PROFILE=#{options[:clock_profile]}",
       "-DGAME_CLOCK_DIAGNOSTICS=#{options[:clock_diagnostics] ? 'ON' : 'OFF'}",
       "-DGAME_BATTERY_WARNING=#{options[:battery_warning] ? 'ON' : 'OFF'}",
@@ -318,6 +325,7 @@ def engine_workflow(argv)
   puts "Pico board: #{options[:board]}" if options[:firmware]
   puts "VM core: #{options[:vm_opt]} (#{options[:vm_opt] == 'speed' ? '-O2' : '-Os'})" if options[:firmware]
   puts "Method cache: #{options[:method_cache]} entries" if options[:firmware]
+  puts "VM state: #{options[:vm_state]}" if options[:firmware]
   puts "Clock profile: #{options[:clock_profile]}" if options[:firmware]
   puts "Clock diagnostics: #{options[:clock_diagnostics] ? 'on' : 'off'}" if options[:firmware]
   puts "Firmware: #{File.join(firmware_dir, 'pico_ruby_gaming.uf2')}" if options[:firmware]

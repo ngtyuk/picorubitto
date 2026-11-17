@@ -84,7 +84,27 @@ WASMのキャッシュは上流の既定設定を維持します。Ruby／Game A
 `-method-cache256`付きの別ディレクトリになります。無効時の出力先は従来どおりです。
 起動ログの`VM:`は`method_cache=0/256`と`state_bytes`も表示します。
 RP2350の256件ではキャッシュが5120バイト、VM状態が9272→14392バイトです。
-VM状態はPSRAMのVMヒープから確保し、SRAMの画面バッファやスプライトキャッシュは変更しません。
+通常のVM状態はPSRAMのVMヒープから確保します。
+
+### VM管理データの配置比較
+
+`engine --vm-state sram`は実機の`mrb_state`を8バイト境界の固定SRAM領域へ配置します。
+メソッド・インスタンス変数・定数キャッシュ、GC管理情報などが対象です。
+Rubyオブジェクト、配列・Hash・文字列の内容、Rubyスタックは引き続きPSRAMを使います。
+画面バッファ、深度バッファ、64KiBのスプライトキャッシュは同じ容量を維持します。
+既定の`--vm-state psram`、WASM、Ruby／Game API、ROM形式とVMのABIは変えません。
+
+`src/game_vm.c`から既存の`mrb_open_with_custom_alloc`を呼び、SRAM版だけGNU ldの
+`--wrap=mrb_basic_alloc_func`を使います。`mrb_open_core`の最初の確保が
+`sizeof(mrb_state)`であることを確認して固定領域を渡し、その他は既存Estallocへ委譲します。
+同じサイズの通常の確保を誤って固定領域へ渡しません。状態の解放はPSRAMアロケータへ
+渡さず、次のVM起動で再利用します。同時に2つのコンソールVMを起動することは拒否します。
+依存checkoutのソースは変更しません。配置切替はCMake側だけで、同じクロスライブラリを使います。
+
+256件キャッシュでは状態全体の14392バイトをSRAMへ移し、PSRAMヒープの同領域を解放します。
+Cヒープの最低予約はSRAM版で8KiB、通常版で1KiB、Core 0/1のスタック予約は16/4KiBです。
+予約が収まらない構成はリンカーが拒否します。起動ログの`state_region`と実ポインタの
+`state_address`で配置を区別し、実機での性能は別途比較します。
 
 ## 共通部分
 
