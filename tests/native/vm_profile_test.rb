@@ -35,6 +35,15 @@ class VMProfileTest < Minitest::Test
     end
   end
 
+  def test_host_compiler_can_use_an_isolated_cache_build
+    Dir.mktmpdir('gaming-cache-compiler-') do |root|
+      cached = File.join(Profile.build_root(root, 'speed', method_cache: 256), 'mrbc/default/bin/mrbc')
+      FileUtils.mkdir_p(File.dirname(cached))
+      File.write(cached, 'matching host compiler')
+      assert_equal cached, Profile.host_compiler(root)
+    end
+  end
+
   def test_only_mruby_core_compiler_changes
     vm = OpenStruct.new(cc: OpenStruct.new(flags: [['-Os', '-fno-unroll-loops'], '-fshort-enums']))
     game = OpenStruct.new(cc: OpenStruct.new(flags: ['-Os', '-O2']))
@@ -43,6 +52,22 @@ class VMProfileTest < Minitest::Test
     vm.build_config_initializer.call(vm)
     assert_equal ['-fno-unroll-loops', '-fshort-enums', '-O2'], vm.cc.flags
     assert_equal ['-Os', '-O2'], game.cc.flags
+  end
+
+  def test_method_cache_is_build_wide_and_has_separate_outputs
+    conf = OpenStruct.new(defines: [])
+    Profile.configure_method_cache(conf, 0)
+    assert_empty conf.defines
+    Profile.configure_method_cache(conf, 256)
+    assert_equal ['MRB_METHOD_CACHE_SIZE=256'], conf.defines
+    assert_equal '', Profile.method_cache_suffix(0)
+    assert_equal '-method-cache256', Profile.method_cache_suffix(256)
+    refute_equal Profile.build_root('/tmp/game', 'speed'),
+                 Profile.build_root('/tmp/game', 'speed', method_cache: 256)
+    assert_equal 128, Profile.method_cache_size('128')
+    [-1, 1, 3, 2048, 'auto', '256.0'].each do |value|
+      assert_raises(ArgumentError) { Profile.method_cache_size(value) }
+    end
   end
 
   def test_separate_roots_and_changed_settings_invalidate_only_cross_target

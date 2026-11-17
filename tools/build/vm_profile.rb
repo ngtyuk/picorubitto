@@ -5,11 +5,12 @@ require 'json'
 require 'fileutils'
 
 module PicoRubyGaming
-  # The RP2350 experiment changes only picoruby-mruby's compiler, including
-  # its VM, GC and core collections. Other gems and the host/WASM stay fixed.
+  # VM optimization changes only picoruby-mruby's compiler. The optional method
+  # cache changes mrb_state's layout, so its define must apply to every gem.
   module VMProfile
     NAMES = %w[size speed].freeze
     DEFAULT = 'speed'.freeze
+    METHOD_CACHE_SIZES = [0, 64, 128, 256, 512, 1024].freeze
     module_function
 
     def validate(name, debug: false)
@@ -23,8 +24,14 @@ module PicoRubyGaming
     end
 
     def host_compiler(root)
-      candidates = [DEFAULT, 'size'].uniq.map do |name|
+      profiles = [DEFAULT, 'size'].uniq
+      candidates = profiles.map do |name|
         File.join(build_root(root, name), 'mrbc', 'default', 'bin', 'mrbc')
+      end
+      METHOD_CACHE_SIZES.drop(1).each do |size|
+        profiles.each do |name|
+          candidates << File.join(build_root(root, name, method_cache: size), 'mrbc', 'default', 'bin', 'mrbc')
+        end
       end
       candidates.find { |path| File.file?(path) } || candidates.first
     end
@@ -44,9 +51,28 @@ module PicoRubyGaming
       end
     end
 
-    def build_root(root, name)
+    def method_cache_size(value)
+      size = Integer(value.to_s, 10)
+      raise ArgumentError unless METHOD_CACHE_SIZES.include?(size)
+      size
+    rescue ArgumentError, TypeError
+      raise ArgumentError, "method cache entries must be #{METHOD_CACHE_SIZES.join(', ')}"
+    end
+
+    def configure_method_cache(conf, value)
+      size = method_cache_size(value)
+      # This changes sizeof(mrb_state): use build-wide defines for every gem.
+      conf.defines << "MRB_METHOD_CACHE_SIZE=#{size}" if size.positive?
+    end
+
+    def method_cache_suffix(value)
+      size = method_cache_size(value)
+      size.zero? ? '' : "-method-cache#{size}"
+    end
+
+    def build_root(root, name, method_cache: 0)
       validate(name)
-      File.join(root, name == 'size' ? 'mruby' : 'mruby-vm-speed')
+      File.join(root, (name == 'size' ? 'mruby' : 'mruby-vm-speed') + method_cache_suffix(method_cache))
     end
 
     # Rake does not necessarily invalidate an existing object when only an

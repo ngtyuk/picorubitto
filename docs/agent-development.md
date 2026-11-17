@@ -41,6 +41,7 @@ WeActでI2SのDINをGP28、音量ダイヤルをGP42、出力上限を50%にす�
 | 音声出力 | `--audio-output pwm\|i2s`、`--volume-knob`、`--audio-max-gain 0..100` |
 | I2S配線 | `--i2s-bclk GPIO`、`--i2s-data GPIO`。組み合わせは[実機ガイド](hardware.md)参照 |
 | VM | `--vm-opt size\|speed`。通常のReleaseはspeed、Debugはsize |
+| メソッド検索キャッシュの比較 | `--method-cache 0\|64\|128\|256\|512\|1024`。既定は0（無効）、実機専用 |
 | ビルド対象 | `--firmware-only`、`--wasm-only`、`--no-emulator-runtime` |
 | パス | `--picoruby-root`、`--build-root`、`--firmware-dir`、`--arm-toolchain` |
 | 調査 | `--debug`、`--profiling` |
@@ -157,6 +158,30 @@ speedのUF2は通常の`build/firmware-release/pico_ruby_gaming.uf2`、クロス
 DebugとWASMだけのビルドでは、省略時はsizeに解決します。
 WASM・ホストの最適化は比較要因に含めず、共通契約を確認します。`--wasm-only --vm-opt speed`は拒否します。
 手順とログの範囲は[性能の計測](performance-notes.md#計測する)を参照してください。
+
+## メソッド検索キャッシュを比較するとき
+
+ゲームROMと実機設定を固定して、キャッシュ無効と256件のUF2を別ディレクトリへ作ります。
+次の両方がUF2とWASMをビルドします。依存環境は上記と同じです。
+
+```sh
+ruby tools/build/workflow.rb engine --vm-opt speed --method-cache 0 \
+  --board weact_studio_rp2350b_core --clock-profile weact-300 \
+  --audio-output i2s --volume-knob --i2s-data 28 --audio-max-gain 50 --battery-warning \
+  --firmware-dir build/method-cache-test/firmware-off
+ruby tools/build/workflow.rb engine --vm-opt speed --method-cache 256 \
+  --board weact_studio_rp2350b_core --clock-profile weact-300 \
+  --audio-output i2s --volume-knob --i2s-data 28 --audio-max-gain 50 --battery-warning \
+  --firmware-dir build/method-cache-test/firmware-256
+python3 tests/native/method_cache_regression.py
+ruby tools/build/workflow.rb checks
+```
+
+`--firmware-dir`を省略すると、有効時の通常出力先に`-method-cache256`が加わります。
+クロスライブラリも別配置で、`mrb_state`の異なるオブジェクトを混ぜません。
+通常ビルドのホストコンパイラがない場合、契約ROM生成はキャッシュ比較ビルド内のものも利用できます。
+起動ログの`VM: profile=speed ... method_cache=0/256 state_bytes=...`でUF2を区別します。
+ROMを再生成する必要はありません。比較中は同じROMのFNV-1aを確認します。
 
 ## ゲームを変更したとき
 

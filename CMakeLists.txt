@@ -94,6 +94,11 @@ string(JSON GAME_VM_PROFILE GET "${GAME_VM_SETTINGS}" vm_opt)
 if(NOT GAME_VM_PROFILE MATCHES "^(size|speed)$")
   message(FATAL_ERROR "Unknown VM profile in ${GAME_VM_RECEIPT}")
 endif()
+string(JSON GAME_METHOD_CACHE_SIZE ERROR_VARIABLE GAME_METHOD_CACHE_ERROR
+  GET "${GAME_VM_SETTINGS}" method_cache_entries)
+if(GAME_METHOD_CACHE_ERROR OR NOT GAME_METHOD_CACHE_SIZE MATCHES "^(0|64|128|256|512|1024)$")
+  message(FATAL_ERROR "Missing or invalid method cache setting; rebuild with tools/build/workflow.rb engine")
+endif()
 
 include("${PICO_SDK_PATH}/external/pico_sdk_import.cmake")
 
@@ -160,6 +165,7 @@ target_compile_definitions(pico_ruby_gaming PRIVATE
   GAME_AUDIO_I2S_BCLK_PIN=${GAME_AUDIO_I2S_BCLK_PIN}
   GAME_AUDIO_I2S_DATA_PIN=${GAME_AUDIO_I2S_DATA_PIN}
   GAME_VM_PROFILE="${GAME_VM_PROFILE}"
+  GAME_METHOD_CACHE_SIZE=${GAME_METHOD_CACHE_SIZE}
   PICO_RP2350=1
   GAME_TFT_SPI_HZ=${GAME_TFT_SPI_HZ}
   GAME_TFT_STRIPE_ROWS=${GAME_TFT_STRIPE_ROWS}
@@ -185,6 +191,9 @@ target_compile_definitions(pico_ruby_gaming PRIVATE
   USE_FAT_SD_DISK=1
   NO_CLOCK_GETTIME=1
 )
+if(NOT GAME_METHOD_CACHE_SIZE STREQUAL "0")
+  target_compile_definitions(pico_ruby_gaming PRIVATE MRB_METHOD_CACHE_SIZE=${GAME_METHOD_CACHE_SIZE})
+endif()
 if(GAME_TFT_DMA_FROM_PSRAM)
   target_compile_definitions(pico_ruby_gaming PRIVATE GAME_TFT_DMA_FROM_PSRAM=1)
 endif()

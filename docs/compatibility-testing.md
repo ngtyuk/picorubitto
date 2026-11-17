@@ -233,6 +233,21 @@ ruby tools/build/workflow.rb checks --compare-3d
 
 ## ホスト回帰テスト
 
+メソッド検索キャッシュの比較設定は、次で無効・256件の実VMを別々に検証します。
+
+```sh
+python3 tests/native/minimum_profile_regression.py
+GAME_METHOD_CACHE_SIZE=256 python3 tests/native/minimum_profile_regression.py
+python3 tests/native/method_cache_regression.py
+```
+
+後者のVMは`build/tests/minimum-profile-method-cache256/`へ作ります。
+`method_cache_regression.py`は対応するヘッダーでCクライアントをリンクし、VM状態のサイズ差、
+有効時に実際のキャッシュが使われること、メソッドの再定義・別名・削除・継承・include／prepend・
+singleton・GC後の結果を確認します。共通言語契約にも同じ呼び出しを含め、WASMと実機用ROMで実行します。
+実機では両UF2の`VM:`と`CLOCK:`、ROMのFNV-1aを照合し、同じ操作・同じROMで比較します。
+起動・TFT・SD・入力・音声と実際の速度は、ホスト検証やWASM契約の合格とは別に確認します。
+
 Ruby、Python 3とC/C++コンパイラが必要です。Cの回帰テストには
 AddressSanitizer／UndefinedBehaviorSanitizerに対応したコンパイラを使います。
 以下はルートから実行する入口です。変更した領域に応じて選びます。

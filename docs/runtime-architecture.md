@@ -68,6 +68,24 @@ DebugとWASMだけのビルドでは、省略時はsizeに解決します。
 CMakeは`libmruby.a`をフルパスでリンクし、ファイルの更新をELF・UF2の依存関係として
 追跡します。Cバインディングだけを更新した増分ビルドでも、最新ライブラリで再リンクします。
 
+### メソッド検索キャッシュの比較
+
+`engine --method-cache 256`はRP2350用の比較設定です。既定の0は従来どおり無効です。
+64・128・256・512・1024件を選択でき、WASMだけのビルドには指定できません。
+WASMのキャッシュは上流の既定設定を維持します。Ruby／Game APIやROM形式は変えません。
+
+`MRB_METHOD_CACHE_SIZE`をビルド全体へ指定すると、mrubyのヘッダーが最小構成の
+`MRB_NO_METHOD_CACHE`を解除します。`sizeof(mrb_state)`が変わるため、VMコアだけでなく
+全gemとCMakeでコンパイルする実機コードを揃えます。CMakeは`gaming-build.json`の
+`method_cache_entries`から同じ定義を取り込み、起動コードでも設定の一致をコンパイル時に確認します。
+件数を持たない古い記録ではリンクせず、workflowで再ビルドします。
+
+有効時のクロス出力は`build/mruby-vm-speed-method-cache256/`等、UF2も
+`-method-cache256`付きの別ディレクトリになります。無効時の出力先は従来どおりです。
+起動ログの`VM:`は`method_cache=0/256`と`state_bytes`も表示します。
+RP2350の256件ではキャッシュが5120バイト、VM状態が9272→14392バイトです。
+VM状態はPSRAMのVMヒープから確保し、SRAMの画面バッファやスプライトキャッシュは変更しません。
+
 ## 共通部分
 
 組み込み文字の`Game::Display.text_aligned`は共通gemのRuby実装で基準座標から

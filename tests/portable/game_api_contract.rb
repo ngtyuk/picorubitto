@@ -70,6 +70,49 @@ def contract_byte_string
   bytes
 end
 
+def run_method_lookup_contract
+  base = Class.new do
+    def value; 11; end
+  end
+  child = Class.new(base)
+  object = child.new
+  32.times { contract_check(object.value == 11, 'warm inherited method lookup') }
+  base.class_eval do
+    alias old_value value
+    def value; 22; end
+  end
+  32.times do
+    contract_check(object.value == 22, 'invalidate inherited method redefinition')
+    contract_check(object.old_value == 11, 'method alias preserves previous body')
+  end
+  child.class_eval do
+    def value; 33; end
+  end
+  32.times { contract_check(object.value == 33, 'invalidate subclass override') }
+  child.class_eval { remove_method :value }
+  32.times { contract_check(object.value == 22, 'invalidate removed override') }
+  def object.value; 44; end
+  32.times do
+    contract_check(object.value == 44, 'singleton method lookup')
+    contract_check(child.new.value == 22, 'singleton method does not leak')
+  end
+  object.singleton_class.class_eval { remove_method :value }
+  contract_check(object.value == 22, 'invalidate removed singleton method')
+  mixin = Module.new do
+    def value; 55; end
+  end
+  child.class_eval { include mixin }
+  contract_check(object.value == 55, 'invalidate included method lookup')
+  wrapper = Module.new do
+    def value; super + 1; end
+  end
+  child.class_eval { prepend wrapper }
+  32.times { contract_check(object.value == 56, 'invalidate prepended method lookup') }
+  GC.start
+  contract_check(object.value == 56, 'method lookup after GC')
+  true
+end
+
 def run_ruby_runtime_contract
   print '[CONTRACT] common Ruby extensions', "\n"
   contract_check(0.respond_to?(:chr), 'Integer#chr exists')
@@ -88,6 +131,7 @@ def run_ruby_runtime_contract
   contract_check(object.instance_variable_get(:@month) == 13, 'monthly field update')
   object.instance_variable_set(:@month, snapshot)
   contract_check(object.instance_variable_get(:@month) == 12, 'monthly snapshot restoration')
+  run_method_lookup_contract
   run_console_output_contract
   true
 end

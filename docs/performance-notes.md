@@ -69,6 +69,18 @@ TFTも表の値へ変化するため、FPSの伸びをCPU性能だけの差と�
 [PicoADK RP2350設定例](https://github.com/DatanoiseTV/PicoADK-Firmware-Template/blob/main/docs/OVERCLOCKING.md)
 も参考にしていますが、WeActでの実測結果ではありません。
 
+## メソッド検索キャッシュの実機比較
+
+`--method-cache 256`で、繰り返すRubyメソッド呼び出しの探索結果を256件保持できます。
+既定は0（無効）で、採用判断前の比較用です。`--vm-opt speed`、CPU 300MHz、音声・描画設定、
+ゲームROMを固定し、キャッシュだけを切り替えます。RP2350ではVMヒープの消費が5120バイト増えます。
+SRAMの描画用領域は変えません。WASMやホストの実行速度から実機での改善率を判断しません。
+
+同じSDカードのROMを変更せず、両UF2で起動ログの`method_cache`、`state_bytes`、
+クロック設定とROMのFNV-1aを記録します。通常移動・カメラ移動・回転を同じ操作で測り、
+初回と繰り返しを分けて比較します。キャッシュは各起動で空になるので、試験の順序も揃えます。
+メソッド探索にかかる時間の削減を狙う設定で、効果は実機測定で確認します。
+
 ## メモリ配置
 
 Core 0のスタックはSRAMに16KiB、Core 1は4KiBを予約します。VMヒープはPSRAMの先頭4MiBを

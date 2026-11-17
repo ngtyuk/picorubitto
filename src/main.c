@@ -15,6 +15,18 @@
 /* The Prism compiler owns this bridge pointer in PicoRuby 4.x. */
 extern mrb_state *global_mrb;
 
+#if GAME_METHOD_CACHE_SIZE == 0
+#ifndef MRB_NO_METHOD_CACHE
+#error "Firmware and VM method cache settings differ"
+#endif
+#else
+#ifdef MRB_NO_METHOD_CACHE
+#error "Firmware method cache was not enabled"
+#endif
+_Static_assert(MRB_METHOD_CACHE_SIZE == GAME_METHOD_CACHE_SIZE,
+               "Firmware and VM method cache sizes differ");
+#endif
+
 static void
 fatal_error(const char *title, const char *detail)
 {
@@ -39,7 +51,8 @@ main(void)
   printf("PicoRubitto boot\n");
   printf("PicoRuby %s\n", picorb_version_with_build_info());
   game_clock_report();
-  printf("VM: profile=%s scope=picoruby-mruby\n", GAME_VM_PROFILE);
+  printf("VM: profile=%s scope=picoruby-mruby method_cache=%u state_bytes=%u\n",
+         GAME_VM_PROFILE, (unsigned)GAME_METHOD_CACHE_SIZE, (unsigned)sizeof(mrb_state));
   printf("STACK: core0=%u core1=%u bytes\n",
          (unsigned)PICO_STACK_SIZE, (unsigned)PICO_CORE1_STACK_SIZE);
 
