@@ -47,7 +47,7 @@ WeActでI2SのDINをGP28、音量ダイヤルをGP42、出力上限を50%にす�
 | パス | `--picoruby-root`、`--build-root`、`--firmware-dir`、`--arm-toolchain` |
 | 調査 | `--debug`、`--profiling` |
 | WeActクロック | `--clock-profile stock\|weact-150\|weact-200\|weact-250\|weact-300`。既定はstock（150MHz） |
-| 起動時のPSRAM全域検査 | `--clock-diagnostics`。WeActクロック指定時だけ追加可能。既定は無効 |
+| 起動時のPSRAM全域検査 | `--clock-diagnostics`。PiZeroまたはWeActクロック指定時に追加可能。既定は無効 |
 | 表示調整 | `--tft-clock`、`--tft-stripe-rows`、`--dirty-merge-extra` |
 
 SRAMフレームバッファ、背景、差分転送、Core 1 presenterと速度重視Cコンパイル、

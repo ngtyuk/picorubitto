@@ -123,6 +123,19 @@ WeAct用は`engine --board weact_studio_rp2350b_core`でビルドします。
 起動ログの`PSRAM: available=1 size=8388608`と`PSRAM: pattern test OK`も確認します。
 UF2、ROM、素材は同じソースから生成した組み合わせを使い、生成物はコミットしません。
 
+### Waveshare RP2350-PiZeroの初回確認
+
+```sh
+ruby tools/build/workflow.rb engine --board waveshare_rp2350_pizero --clock-diagnostics
+ruby tools/build/workflow.rb checks
+```
+
+`build/firmware-release-waveshare-rp2350-pizero-clock-check/`のUF2を使います。
+USB CDCで8MiBのPSRAM検出、`CLOCK TEST: PASS`、TFTの初回転送、内蔵SDの
+`SCK=GP30 MISO=GP40 MOSI=GP31 CS=GP43` と `SD: mount result=0`、ROMの読み込みを順に確認します。
+統合ROMで全ボタン、描画、音声、SAVEを確認し、電源を入れ直して保存データを再度読み込みます。
+実機合格の条件とDVI・USB入力の後続検証は[対応ロードマップ](rp2350-pizero.md)を参照してください。
+
 ### WeActクロック候補の評価
 
 手順は[実機ガイド](hardware.md#オーバークロック検証と復旧)、候補値は

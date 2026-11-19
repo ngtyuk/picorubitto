@@ -67,6 +67,18 @@ WASMランタイムも同時に更新されます。Pico Plus 2向けの標準�
 `build/firmware-release/`へ出力されます。
 
 標準releaseの詳細と比較用オプションは[性能メモ](performance-notes.md)を参照してください。
+
+8MiBのPSRAMを実装したWaveshare RP2350-PiZero向けの実機評価用ビルドは次のコマンドで生成します。
+内蔵microSDと外付けST7789Vを使う構成です。[PiZeroの配線](hardware.md#waveshare-rp2350-pizeroの場合)を
+確認してください。
+
+```sh
+ruby tools/build/workflow.rb engine --board waveshare_rp2350_pizero
+```
+
+出力は `build/firmware-release-waveshare-rp2350-pizero/pico_ruby_gaming.uf2` と
+`emulator/picoruby/` です。PSRAMの全域を診断するUF2は `--clock-diagnostics` を追加します。
+
 実機だけ・ブラウザだけのビルドは、それぞれ`engine --firmware-only`・`engine --wasm-only`です。
 エンジンや共通APIを変更した場合は、両方をビルドします。
 

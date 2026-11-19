@@ -5,6 +5,7 @@ require 'fileutils'
 
 class ClockProfileTest < Minitest::Test
   ROOT = File.expand_path('../..', __dir__)
+  PIZERO = 'waveshare_rp2350_pizero'
 
   def configure(profile, board = 'weact_studio_rp2350b_core', diagnostics: false)
     Dir.mktmpdir('gaming-clock-') do |dir|
@@ -76,6 +77,12 @@ class ClockProfileTest < Minitest::Test
     assert_includes output, 'Unknown GAME_CLOCK_PROFILE'
   end
 
+  def test_pizero_diagnostics_use_the_stock_clock
+    definitions, output, status = configure('stock', PIZERO, diagnostics: true)
+    assert status.success?, output
+    assert_equal ['GAME_CLOCK_PROFILE_NAME="stock"', 'GAME_CLOCK_CUSTOM=0', 'GAME_CLOCK_DIAGNOSTICS=1'], definitions
+  end
+
   def test_cli_rejects_profile_without_weact_firmware
     [%w[--clock-profile weact-300],
      %w[--board weact_studio_rp2350b_core --clock-profile weact-200 --wasm-only]].each do |args|
@@ -90,5 +97,19 @@ class ClockProfileTest < Minitest::Test
       'engine', '--board', 'weact_studio_rp2350b_core', '--clock-diagnostics')
     refute status.success?
     assert_includes output, '--clock-diagnostics requires'
+  end
+
+  def test_cli_rejects_pizero_options_that_conflict_with_onboard_wiring_or_require_firmware
+    {
+      %w[--volume-knob] => 'GP42 is wired to the microSD slot',
+      %w[--audio-output i2s --i2s-data 28] => 'PiZero I2S requires BCLK=26, WS=27, DATA=17',
+      %w[--audio-output i2s --i2s-bclk 27] => 'PiZero I2S requires BCLK=26, WS=27, DATA=17',
+      %w[--clock-diagnostics --wasm-only] => 'requires an RP2350 firmware build'
+    }.each do |args, message|
+      output, status = Open3.capture2e('ruby', File.join(ROOT, 'tools/build/workflow.rb'),
+        'engine', '--board', PIZERO, *args)
+      refute status.success?
+      assert_includes output, message
+    end
   end
 end

@@ -36,10 +36,18 @@
 #include "picorb_heap.h"
 
 #define SD_SPI spi1
+#ifdef WAVESHARE_RP2350_PIZERO
+/* Onboard microSD. DAT3 uses software CS because GP43 muxes to SPI1 TX. */
+#define SD_SCK_PIN 30
+#define SD_MISO_PIN 40
+#define SD_MOSI_PIN 31
+#define SD_CS_PIN 43
+#else
 #define SD_SCK_PIN 10
 #define SD_MISO_PIN 8
 #define SD_MOSI_PIN 11
 #define SD_CS_PIN 13
+#endif
 
 #define TFT_SPI spi0
 #define TFT_SCK_PIN 18
@@ -1499,15 +1507,16 @@ sd_init(void)
   DSTATUS status;
   FRESULT result;
 
-  printf("SD: init SPI1 at 400 kHz\n");
+  printf("SD: init SPI1 at 400 kHz SCK=GP%d MISO=GP%d MOSI=GP%d CS=GP%d\n",
+         SD_SCK_PIN, SD_MISO_PIN, SD_MOSI_PIN, SD_CS_PIN);
   spi_init(SD_SPI, 400 * 1000);
   gpio_set_function(SD_SCK_PIN, GPIO_FUNC_SPI);
   gpio_set_function(SD_MOSI_PIN, GPIO_FUNC_SPI);
   gpio_set_function(SD_MISO_PIN, GPIO_FUNC_SPI);
 
   gpio_init(SD_CS_PIN);
-  gpio_set_dir(SD_CS_PIN, GPIO_OUT);
   gpio_put(SD_CS_PIN, 1);
+  gpio_set_dir(SD_CS_PIN, GPIO_OUT);
 
   if (FAT_set_spi_unit("RP2040_SPI1", SD_SCK_PIN, SD_MISO_PIN,
                        SD_MOSI_PIN, SD_CS_PIN) < 0) {

@@ -19,6 +19,19 @@
 依存バージョンとROM形式は[依存バージョン](dependencies.md)で管理します。PicoRuby 4.0.5の
 mruby構成を実機・WASM・ホスト/ブラウザコンパイラで揃えます。
 
+## Waveshare RP2350-PiZeroのボード設定
+
+`engine --board waveshare_rp2350_pizero`はPico SDKのRP2350B向けボード定義を使います。
+ゲームのファームウェアターゲットからSDKのPSRAM初期化コードにCS1=GP47、チップIDによる
+容量検出、QPIの75MHz上限を渡します。既存のブート処理は8MiB以上の検出と読み書きに成功してから
+VMヒープとメディア領域を使います。PiZeroでは既定の150MHzクロックでも
+`--clock-diagnostics`で全域検査を有効にできます。
+
+SDは既存のFatFs SPI1ポートを内蔵スロットの配線に割り当てます。ゲームの画面と入力は
+既存のTFT・GPIOバックエンドを使います。I2SのDINはGP17で、GP42の音量ダイヤル設定は
+ビルド時に拒否します。ボード差はCファームウェア内に収まり、同じ `game.mrb` を使います。
+詳細は[対応ロードマップ](rp2350-pizero.md)を参照してください。
+
 ## 実機のクロックプロファイル
 
 `cmake/clock_profile.cmake`は`pico_sdk_init()`より前に起動クロック・電圧下限・Flash分周・
@@ -26,7 +39,7 @@ PSRAM上限を指定します。別ターゲットのboot stage 2にもFlash設�
 SDKのクロック初期化が電圧を確保してからCPUを高速化し、その後PSRAMを初期化します。
 起動後にPSRAMを使用したままシステムクロックを切り替える方式は使いません。
 
-既定の`stock`はSDK設定を維持します。WeActプロファイルでは、`src/game_clock.c`が
+既定の`stock`はSDKのCPUクロック設定を維持します。WeActプロファイルでは、`src/game_clock.c`が
 `main`の先頭でSPI/UART用`clk_peri`を150MHz以下へ分周し、その後にUSB stdio・ゲームの
 周辺機器を開始します。I2SやPWMの分周は初期化時のクロックから求めます。
 PSRAMの75MHz上限に対する分周・受信遅延・CSタイミングはSDKが起動時に計算します。

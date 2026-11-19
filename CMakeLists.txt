@@ -32,6 +32,14 @@ if(GAME_BATTERY_WARNING AND NOT PICO_BOARD STREQUAL "weact_studio_rp2350b_core")
   message(FATAL_ERROR "Battery warning requires WeAct RP2350B Core")
 endif()
 option(GAME_AUDIO_VOLUME_KNOB "Read ADC2/GP42 as the audio master volume" OFF)
+if(PICO_BOARD STREQUAL "waveshare_rp2350_pizero")
+  if(GAME_AUDIO_VOLUME_KNOB)
+    message(FATAL_ERROR "PiZero GP42 is wired to the microSD slot")
+  endif()
+  set(_game_i2s_default_data 17)
+else()
+  set(_game_i2s_default_data 28)
+endif()
 set(GAME_AUDIO_MAX_GAIN 100 CACHE STRING "Maximum audio output gain in percent (0..100)")
 if(NOT GAME_AUDIO_MAX_GAIN MATCHES "^(0|[1-9][0-9]?|100)$")
   message(FATAL_ERROR "GAME_AUDIO_MAX_GAIN must be an integer from 0 to 100")
@@ -42,8 +50,12 @@ unset(GAME_AUDIO_I2S_WIDE_MATH CACHE)
 set(GAME_AUDIO_I2S_WIDE_MATH OFF)
 option(GAME_AUDIO_I2S "Use MAX98357A I2S instead of PWM audio" OFF)
 set(GAME_AUDIO_I2S_BCLK_PIN 26 CACHE STRING "I2S BCLK GPIO; WS uses the next GPIO")
-set(GAME_AUDIO_I2S_DATA_PIN 28 CACHE STRING "I2S data GPIO")
+set(GAME_AUDIO_I2S_DATA_PIN ${_game_i2s_default_data} CACHE STRING "I2S data GPIO")
 if(GAME_AUDIO_I2S)
+  if(PICO_BOARD STREQUAL "waveshare_rp2350_pizero" AND
+     (NOT GAME_AUDIO_I2S_BCLK_PIN EQUAL 26 OR NOT GAME_AUDIO_I2S_DATA_PIN EQUAL 17))
+    message(FATAL_ERROR "PiZero I2S requires BCLK=26, WS=27, DATA=17; GP28 is wired to PIO-USB")
+  endif()
   if(NOT GAME_AUDIO_I2S_BCLK_PIN MATCHES "^(26|27)$" OR
      NOT GAME_AUDIO_I2S_DATA_PIN MATCHES "^(17|26|27|28)$")
     message(FATAL_ERROR "I2S must use free GPIOs 17 or 26..28; BCLK must be 26 or 27")
@@ -198,6 +210,15 @@ target_compile_definitions(pico_ruby_gaming PRIVATE
   USE_FAT_SD_DISK=1
   NO_CLOCK_GETTIME=1
 )
+if(PICO_BOARD STREQUAL "waveshare_rp2350_pizero")
+  # The board header describes the unpopulated board. Probe the chip ID on
+  # the wired CS1 pin and keep QPI within the APS6404L linear-burst limit.
+  target_compile_definitions(pico_ruby_gaming PRIVATE
+    PICO_PSRAM_CS_PIN=47
+    PICO_AUTO_DETECT_PSRAM_SIZE=1
+    PICO_DEFAULT_PSRAM_MAX_FREQ=75000000
+  )
+endif()
 if(NOT GAME_METHOD_CACHE_SIZE STREQUAL "0")
   target_compile_definitions(pico_ruby_gaming PRIVATE MRB_METHOD_CACHE_SIZE=${GAME_METHOD_CACHE_SIZE})
 endif()

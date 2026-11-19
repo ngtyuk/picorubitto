@@ -23,6 +23,7 @@
 | [開発ガイド](agent-development.md) | 変更範囲ごとのビルドと検証 |
 | [互換性テスト](compatibility-testing.md) | 実機の統合ROM、WASM契約テスト、ホスト・ブラウザ回帰テスト |
 | [ランタイム構成](runtime-architecture.md) | 共通部分とRP2350・WASMの責務 |
+| [RP2350-PiZero対応ロードマップ](rp2350-pizero.md) | 基板仕様、PSRAM増設、初期対応とDVI実装の検証順序 |
 | [API拡張](extension-guide.md) | `Game` APIの追加・変更手順 |
 | [性能メモ](performance-notes.md) | 描画・音声・メモリの制約、release設定、測定 |
 | [エージェント向けルール](../AGENTS.md) | 検証、生成物、Git操作のルール |

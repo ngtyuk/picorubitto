@@ -15,9 +15,11 @@ ROOT = File.expand_path('../..', __dir__)
 DEFAULT_PICORUBY_ROOT = PicoRubyGaming::Dependencies.directory('picoruby')
 DEFAULT_MRBC = PicoRubyGaming::VMProfile.host_compiler(File.join(ROOT, 'build'))
 DEFAULT_PICO_BOARD = 'pimoroni_pico_plus2_rp2350'
+PIZERO_BOARD = 'waveshare_rp2350_pizero'
 SUPPORTED_PICO_BOARDS = [
   DEFAULT_PICO_BOARD,
-  'weact_studio_rp2350b_core'
+  'weact_studio_rp2350b_core',
+  PIZERO_BOARD
 ].freeze
 DEFAULT_ARM_TOOLCHAIN = ENV['ARM_TOOLCHAIN']
 
@@ -118,13 +120,13 @@ def engine_workflow(argv)
     opts.on('--i2s-bclk GPIO', Integer, 'I2S BCLK pin, WS is GPIO+1 (default: 26)') { |value| options[:i2s_bclk] = value }
     opts.on('--battery-warning', 'WeAct GP40 battery monitor and GP24 status LED') { options[:battery_warning] = true }
     opts.on('--volume-knob', 'ADC2/GP42 master volume (Pico Plus header GP28)') { options[:volume_knob] = true }
-    opts.on('--i2s-data GPIO', Integer, 'I2S data pin (default: 28; with volume knob: 17)') { |value| options[:i2s_data] = value }
+    opts.on('--i2s-data GPIO', Integer, 'I2S data pin (default: 28; PiZero or with volume knob: 17)') { |value| options[:i2s_data] = value }
     opts.on('--profiling', 'build firmware with USB serial frame profiling') { options[:profiling] = true }
     opts.on('--clock-profile PROFILE', %w[stock weact-150 weact-200 weact-250 weact-300],
             'WeAct clock/voltage profile (default: stock at 150 MHz)') do |value|
       options[:clock_profile] = value
     end
-    opts.on('--clock-diagnostics', 'check the full scratch PSRAM before boot (requires a WeAct clock profile)') do
+    opts.on('--clock-diagnostics', 'check the full scratch PSRAM before boot (PiZero or a WeAct clock profile)') do
       options[:clock_diagnostics] = true
     end
     opts.on('--tft-clock MHZ', Integer, 'set TFT SPI clock in MHz') { |value| options[:tft_clock_mhz] = value }
@@ -157,13 +159,22 @@ def engine_workflow(argv)
     fail_with('--clock-profile requires WeAct RP2350B Core') unless options[:board] == 'weact_studio_rp2350b_core'
     fail_with('--clock-profile requires an RP2350 firmware build') unless options[:firmware]
   end
-  if options[:clock_diagnostics] && options[:clock_profile] == 'stock'
-    fail_with('--clock-diagnostics requires a WeAct --clock-profile')
+  pizero = options[:board] == PIZERO_BOARD
+  if options[:clock_diagnostics]
+    fail_with('--clock-diagnostics requires an RP2350 firmware build') unless options[:firmware]
+    if options[:clock_profile] == 'stock' && !pizero
+      fail_with('--clock-diagnostics requires PiZero or a WeAct --clock-profile')
+    end
   end
   fail_with('--audio-max-gain must be an integer from 0 to 100') unless (0..100).cover?(options[:audio_max_gain])
   fail_with('--battery-warning requires WeAct RP2350B Core') if options[:battery_warning] && options[:board] != 'weact_studio_rp2350b_core'
-  default_i2s_data = options[:volume_knob] ? 17 : 28
+  fail_with('--volume-knob is unavailable on PiZero: GP42 is wired to the microSD slot') if pizero && options[:volume_knob]
+  default_i2s_data = pizero || options[:volume_knob] ? 17 : 28
   options[:i2s_data] ||= default_i2s_data
+  if pizero && options[:audio_output] == 'i2s' &&
+     (options[:i2s_bclk] != 26 || options[:i2s_data] != 17)
+    fail_with('PiZero I2S requires BCLK=26, WS=27, DATA=17; GP28 is wired to PIO-USB')
+  end
   i2s_pin_variant = if options[:audio_output] == 'i2s' &&
                       (options[:i2s_bclk] != 26 || options[:i2s_data] != default_i2s_data)
                       "bclk#{options[:i2s_bclk]}-data#{options[:i2s_data]}"

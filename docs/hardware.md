@@ -1,6 +1,7 @@
 # 実機の接続と起動
 
 対応ボードはPimoroni Pico Plus 2（RP2350）とWeAct RP2350B Core Board（8MB PSRAM）です。
+8MiB PSRAMを増設したWaveshare RP2350-PiZero向けには実機評価用UF2を生成できます。
 UF2のビルド環境は[セットアップ](getting-started.md)、ゲームROMの生成は
 [ゲーム作成](game-development.md)を参照してください。microSDカードはFAT32で用意します。
 
@@ -18,7 +19,7 @@ Pimoroni Pico Plus 2、WeAct RP2350B Core Boardともに、TFT、microSD、操�
 | 十字キー ↑ / ↓ / ← / → | GP2 / GP3 / GP4 / GP5 |
 | A / B | GP6 / GP7 |
 | L / R / START / SELECT | GP9 / GP12 / GP14 / GP16 |
-| SD MISO / CLK / MOSI / CS | GP8 / GP10 / GP11 / GP13 |
+| 外付けSD MISO / CLK / MOSI / CS（Pimoroni・WeAct） | GP8 / GP10 / GP11 / GP13 |
 | TFT SCK / MOSI / RST / DC / CS | GP18 / GP19 / GP20 / GP21 / GP22 |
 | アンプへのPWM音声入力 | GP15 |
 
@@ -37,8 +38,9 @@ ICの利得を23.5dBとし、入力カップリングと電源デカップリン
 
 ### MAX98357AのI2S出力
 
-`engine --audio-output i2s`でMAX98357A向けのUF2を生成できます。既定は従来のPWMです。
-I2S版ではGP26〜GP28を使い、TFT・SD・ボタン・PSRAMの割り当てを維持します。
+`engine --audio-output i2s`でMAX98357A向けのUF2を生成できます。既定はPWMです。
+Pimoroni・WeActのI2S版はGP26〜GP28を使います。
+PiZeroのピン番号は[PiZeroの配線表](#waveshare-rp2350-pizeroの場合)を参照してください。
 
 | MAX98357Aモジュール | 両ボード共通の接続 |
 | --- | --- |
@@ -82,6 +84,29 @@ PWM版は通常の出力先です。既存のAPI14 ROMと音声素材を継続�
 ピンを変える場合は`--i2s-bclk 27 --i2s-data 26`でBCLK=27・WS=28・DIN=26にできます。
 時計の2本はGP26/27またはGP27/28、DINはGP17・GP26〜28から時計と重ならないピンを選びます。
 既定と異なるピンを明示した版は出力先に`-bclk27-data26`などが付きます。起動ログと配線を揃えてください。
+
+### Waveshare RP2350-PiZeroの場合
+
+U1に8MiBのPSRAMを実装し、カードを基板内蔵のmicroSDスロットに挿します。
+PSRAM部品の候補と実装前の照合項目は[対応ロードマップ](rp2350-pizero.md#psramの増設)を
+参照してください。画面は外付けST7789V、操作はGPIOボタンです。GP番号と40ピンヘッダーの
+物理ピン番号の対応を下表に示します。
+
+| 機能 | RP2350 GPIO | 物理ピン |
+| --- | --- | --- |
+| ↑ / ↓ / ← / → | GP2 / GP3 / GP4 / GP5 | 3 / 5 / 8 / 10 |
+| A / B | GP6 / GP7 | 31 / 26 |
+| L / R / START / SELECT | GP9 / GP12 / GP14 / GP16 | 32 / 21 / 7 / 36 |
+| TFT SCK / MOSI / RST / DC / CS | GP18 / GP19 / GP20 / GP21 / GP22 | 12 / 35 / 38 / 40 / 15 |
+| PWM音声 | GP15 | 29 |
+| I2S BCLK / WS / DIN | GP26 / GP27 / GP17 | 37 / 13 / 11 |
+| 3.3V / GND（接続例） | — | 1 / 6 |
+
+UF2はBOOTを使って書き込み、起動ログはUSB（J4）側で読みます。I2Sを使う場合は
+ビルドコマンドに `--audio-output i2s`を追加します。PIO-USBはGP28/29、
+microSDのDAT2はGP42に配線されているため、I2SのDINはGP17、音量はゲーム側から制御します。
+mini HDMIのDVI出力とPIO-USBホスト入力は[ロードマップ](rp2350-pizero.md#対応ロードマップ)に
+沿って評価します。ピン番号の出典は[Waveshare回路図](https://files.waveshare.com/wiki/RP2350-PiZero/RP2350-PiZero.pdf)です。
 
 ### Pimoroni Pico Plus 2の場合
 

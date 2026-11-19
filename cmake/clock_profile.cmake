@@ -3,14 +3,22 @@
 # receive the Flash divider as well as the application's SDK sources.
 set(GAME_CLOCK_PROFILE stock CACHE STRING "Clock profile: stock or weact-{150,200,250,300}")
 set_property(CACHE GAME_CLOCK_PROFILE PROPERTY STRINGS stock weact-150 weact-200 weact-250 weact-300)
-option(GAME_CLOCK_DIAGNOSTICS "Run full scratch PSRAM checks before boot (WeAct profiles only)" OFF)
+option(GAME_CLOCK_DIAGNOSTICS "Run full scratch PSRAM checks before boot (PiZero or WeAct profiles)" OFF)
 
-if(GAME_CLOCK_DIAGNOSTICS AND GAME_CLOCK_PROFILE STREQUAL "stock")
-  message(FATAL_ERROR "GAME_CLOCK_DIAGNOSTICS requires a WeAct clock profile")
+if(GAME_CLOCK_DIAGNOSTICS AND GAME_CLOCK_PROFILE STREQUAL "stock" AND
+   NOT PICO_BOARD STREQUAL "waveshare_rp2350_pizero")
+  message(FATAL_ERROR "GAME_CLOCK_DIAGNOSTICS requires a WeAct clock profile or PiZero")
+endif()
+
+if(GAME_CLOCK_DIAGNOSTICS)
+  set(_clock_diagnostics 1)
+else()
+  set(_clock_diagnostics 0)
 endif()
 
 if(GAME_CLOCK_PROFILE STREQUAL "stock")
-  add_compile_definitions(GAME_CLOCK_PROFILE_NAME="stock" GAME_CLOCK_CUSTOM=0 GAME_CLOCK_DIAGNOSTICS=0)
+  add_compile_definitions(GAME_CLOCK_PROFILE_NAME="stock" GAME_CLOCK_CUSTOM=0
+    GAME_CLOCK_DIAGNOSTICS=${_clock_diagnostics})
 else()
   if(NOT PICO_BOARD STREQUAL "weact_studio_rp2350b_core")
     message(FATAL_ERROR "Clock profiles require WeAct RP2350B Core")
@@ -49,11 +57,6 @@ else()
 
   math(EXPR _clock_hz "${_clock_mhz} * 1000000")
   math(EXPR _flash_div "(${_clock_mhz} + 74) / 75")
-  if(GAME_CLOCK_DIAGNOSTICS)
-    set(_clock_diagnostics 1)
-  else()
-    set(_clock_diagnostics 0)
-  endif()
   add_compile_definitions(
     GAME_CLOCK_PROFILE_NAME="${GAME_CLOCK_PROFILE}"
     GAME_CLOCK_CUSTOM=1
