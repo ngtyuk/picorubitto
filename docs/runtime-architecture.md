@@ -359,6 +359,18 @@ signed 16-bit値へ適用して、低音量でも8-bitへ再量子化しませ�
 契約テストやサンプルなどの固定ページでは、`emulator/browser-bridge.js`のページ設定で
 Rubyソースとアセットを指定します。
 
+### 実験用テクスチャ経路
+
+ローカル評価用の`ThreeD.draw_textured_triangles`は既存の単色ラスタライザと別経路です。
+RP2350は`src/game_3d_texture.inc`を`game_platform.c`から取り込み、WASMは
+`emulator/game_adapter.rb`と`emulator/emulator.js`で同じXYZUVバッチを扱います。
+既存TextureのRGB565画素を参照し、カメラ・near/far・16-bit深度・出力先を共有します。
+UV付きカメラ空間頂点をクリップ後、浮動小数点でUVまたはU/Z・V/Z・1/Zを補間します。
+遠近補正は可視・深度合格画素で1/Zの逆数を計算します。追加の常駐フレームバッファや
+深度領域は確保しません。Ruby→Cの入力コピーは最大15360バイトを一時確保します。
+通常描画の既定設定は変えず、試作APIを明示的に呼んだゲームだけがこの経路を使います。
+正式採用とビルド時の除外設定は実機の速度評価後に判断します。
+
 ### 3DとCanvasの同期
 
 WASMの3D描画は1枚のImageDataを更新し、実際に画素が変わったときだけ未反映として記録します。

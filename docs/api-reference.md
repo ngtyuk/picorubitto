@@ -266,7 +266,8 @@ Game::Display.draw_line(10, 10, 200, 100, 2, 0xffff)
 
 `Game::ThreeD`は、ワールド座標のRGB565三角形をソフトウェア描画します。既定の出力先は
 320×240画面全体ですが、内部解像度と出力ビューポートを変更できます。実機とWASMの両方で
-深度バッファを使うため、三角形を奥行き順に並べる必要はありません。テクスチャ、ライティング、
+深度バッファを使うため、三角形を奥行き順に並べる必要はありません。通常のAPIは単色です。
+ローカル検証用のテクスチャAPIは下記の実験機能を参照してください。ライティング、
 三角形以外のモデル形式は対象外です。
 
 ```ruby
@@ -284,6 +285,38 @@ Game::ThreeD.draw_triangle(
 )
 Game::Display.present
 ```
+
+### 実験用3Dテクスチャ（ローカル評価中）
+
+正式採用・性能保証前の試作です。`Game::ThreeD.textures_supported?`が`true`のときだけ使います。
+既存の単色描画から自動的に切り替わることはありません。`ThreeD::Model`には未対応です。
+
+```ruby
+texture = Game::Texture.load('wall.raw', 32, 32)
+Game::Display.clear(0)
+Game::ThreeD.begin_frame
+Game::ThreeD.draw_textured_triangles(texture, [
+  -1, -1, 3, 0, 1, # X, Y, Z, U, V
+   1, -1, 3, 1, 1,
+   0,  1, 3, 0.5, 0
+], true)
+Game::Display.present
+```
+
+`draw_textured_triangles(texture, triangles, perspective = true)`は1三角形15値の
+XYZUVフラット配列を受け取り、`nil`を返します。最大256三角形、空配列も許可します。
+XYZは有限の数値で±32768以内、UVは有限の数値で0〜1です。Uは右向き、Vは下向き、
+画像全体を0〜1に対応させます。最近傍サンプリングを使い、境界は端の画素へ制限します。
+リピート、半透明、フィルタ、ライティングはありません。Textureのキー色の画素では
+色・深度のどちらも更新しません。
+
+`perspective`が真なら遠近補正、偽なら画面上でのアフィン補間です。near/farで切られる
+頂点ではUVも補間します。裏面カリング、ビューポート、内部解像度、深度バッファは既存3Dと
+共有し、単色面との前後関係も判定します。フレームの開始・終了の規則も同じです。
+
+`texture`がTextureでない場合や配列要素が数値でない場合は`TypeError`、不正な配列長・
+座標・UVは`ArgumentError`、フレーム未開始またはレンダラ未利用時は`RuntimeError`です。
+実機側は呼び出しごとに配列を一時コピーし、呼び出し後に解放します。
 
 ### `Game::ThreeD.set_camera`
 

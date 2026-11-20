@@ -444,6 +444,47 @@ three_d_draw_triangle(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
+three_d_textures_supported(mrb_state *mrb, mrb_value self)
+{
+  (void)mrb; (void)self;
+  return mrb_bool_value(game_3d_supported());
+}
+
+static mrb_value
+three_d_draw_textured_triangles(mrb_state *mrb, mrb_value self)
+{
+  mrb_value object, array;
+  mrb_bool perspective = true;
+  (void)self;
+  mrb_get_args(mrb, "oo|b", &object, &array, &perspective);
+  if (!mrb_array_p(array)) mrb_raise(mrb, E_ARGUMENT_ERROR, "texture batch must be an array");
+  game_texture_t *texture = mrb_data_get_ptr(mrb, object, &game_texture_type);
+  mrb_int count = RARRAY_LEN(array);
+  if (count % 15 != 0 || count > 256 * 15) {
+    mrb_raise(mrb, E_ARGUMENT_ERROR, "texture batch needs at most 256 XYZUV triangles");
+  }
+  for (mrb_int i = 0; i < count; i++) {
+    float value;
+    mrb_value item = mrb_ary_ref(mrb, array, i);
+    if (!mrb_integer_p(item) && !mrb_float_p(item)) {
+      mrb_raise(mrb, E_TYPE_ERROR, "XYZUV values must be numbers");
+    }
+    if (!game_3d_number(item, &value) ||
+        (i % 5 < 3 ? fabsf(value) > 32768.0f : value < 0 || value > 1)) {
+      mrb_raise(mrb, E_ARGUMENT_ERROR, "XYZ must be finite within +/-32768; UV within 0..1");
+    }
+  }
+  float *values = count ? mrb_malloc(mrb, (size_t)count * sizeof(float)) : NULL;
+  for (mrb_int i = 0; i < count; i++) {
+    game_3d_number(mrb_ary_ref(mrb, array, i), &values[i]);
+  }
+  bool ok = game_3d_draw_textured_triangles(texture, values, count / 15, perspective);
+  mrb_free(mrb, values);
+  if (!ok) mrb_raise(mrb, E_RUNTIME_ERROR, "3D texture renderer unavailable or frame not begun");
+  return mrb_nil_value();
+}
+
+static mrb_value
 three_d_draw_triangles(mrb_state *mrb, mrb_value self)
 {
   mrb_value triangles;
@@ -1481,6 +1522,12 @@ mrb_picoruby_game_gem_init(mrb_state *mrb)
   mrb_define_module_function_id(mrb, game_3d_module,
                                 mrb_intern_lit(mrb, "draw_triangle"),
                                 three_d_draw_triangle, MRB_ARGS_REQ(10));
+  mrb_define_module_function_id(mrb, game_3d_module,
+                                mrb_intern_lit(mrb, "textures_supported?"),
+                                three_d_textures_supported, MRB_ARGS_NONE());
+  mrb_define_module_function_id(mrb, game_3d_module,
+                                mrb_intern_lit(mrb, "draw_textured_triangles"),
+                                three_d_draw_textured_triangles, MRB_ARGS_ARG(2, 1));
   mrb_define_module_function_id(mrb, game_3d_module,
                                 mrb_intern_lit(mrb, "draw_triangles"),
                                 three_d_draw_triangles, MRB_ARGS_REQ(1));

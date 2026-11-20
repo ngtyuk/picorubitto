@@ -3834,6 +3834,97 @@
     }
   }
 
+  // Experimental path: normalized clamped UV, nearest sampling, key-color cutout.
+  function threeDClipUV(input, plane, greater) {
+    const output = [];
+    for (let i = 0; i < input.length; i++) {
+      const a = input[i], b = input[(i + 1) % input.length];
+      const ai = greater ? a.z >= plane : a.z <= plane;
+      const bi = greater ? b.z >= plane : b.z <= plane;
+      if (ai !== bi) {
+        const t = (plane - a.z) / (b.z - a.z);
+        output.push({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t, z:plane,
+          u:a.u+(b.u-a.u)*t, v:a.v+(b.v-a.v)*t});
+      }
+      if (bi) output.push(b);
+    }
+    return output;
+  }
+
+  function threeDRasterUV(texture, vertices, perspective) {
+    const p = vertices.map(threeDProjectVertex);
+    const area = threeDEdge(p[0].x,p[0].y,p[1].x,p[1].y,p[2].x,p[2].y);
+    if (!Number.isFinite(area) || area <= 0.000001) return;
+    const minX = Math.min(...p.map(v=>v.x)), maxX = Math.max(...p.map(v=>v.x));
+    const minY = Math.min(...p.map(v=>v.y)), maxY = Math.max(...p.map(v=>v.y));
+    if (maxX < 0 || maxY < 0 || minX >= threeDWidth || minY >= threeDHeight) return;
+    const left=Math.max(0,Math.floor(minX)), right=Math.min(threeDWidth-1,Math.ceil(maxX));
+    const top=Math.max(0,Math.floor(minY)), bottom=Math.min(threeDHeight-1,Math.ceil(maxY));
+    const row=[], dx=[], dy=[], u=[], v=[];
+    let qdx=0, udx=0, vdx=0;
+    for (let i=0;i<3;i++) {
+      const j=(i+1)%3, k=(i+2)%3;
+      row[i]=threeDEdge(p[j].x,p[j].y,p[k].x,p[k].y,left+0.5,top+0.5)/area;
+      dx[i]=(p[k].y-p[j].y)/area; dy[i]=(p[j].x-p[k].x)/area;
+      u[i]=vertices[i].u*(perspective?p[i].inverseZ:1);
+      v[i]=vertices[i].v*(perspective?p[i].inverseZ:1);
+      qdx+=dx[i]*p[i].inverseZ; udx+=dx[i]*u[i]; vdx+=dx[i]*v[i];
+    }
+    let data, wrote=false;
+    const rgb=[0,0,0];
+    for (let y=top;y<=bottom;y++) {
+      const w=row.slice(); let q=0,s=0,t=0;
+      for (let i=0;i<3;i++) {q+=w[i]*p[i].inverseZ;s+=w[i]*u[i];t+=w[i]*v[i];}
+      for (let x=left;x<=right;x++) {
+        if (w.every(value=>value>=0) && q>0) {
+          const offset=y*threeDWidth+x, depth=threeDDepthValue(Math.round(q*THREE_D_FIXED_ONE));
+          if (depth>threeDDepthBuffer[offset]) {
+            const factor=perspective?1/q:1;
+            const tx=Math.min(texture.width-1,Math.floor(Math.max(0,Math.min(1,s*factor))*texture.width));
+            const ty=Math.min(texture.height-1,Math.floor(Math.max(0,Math.min(1,t*factor))*texture.height));
+            const texel=(ty*texture.width+tx)*2;
+            const color=(texture.asset.bytes[texel]<<8)|texture.asset.bytes[texel+1];
+            if (color!==texture.keyColor) {
+              threeDDepthBuffer[offset]=depth;
+              const converted=rgb565ToRgb(color);
+              rgb[0]=converted[0];rgb[1]=converted[1];rgb[2]=converted[2];
+              if (!data) data=ensureThreeDImage().data;
+              threeDWritePixel(data,x,y,rgb); wrote=true;
+            }
+          }
+        }
+        for (let i=0;i<3;i++) w[i]+=dx[i];
+        q+=qdx;s+=udx;t+=vdx;
+      }
+      for (let i=0;i<3;i++) row[i]+=dy[i];
+    }
+    if (wrote) threeDImageDirty=true;
+  }
+
+  function draw3DTexturedTriangles(handle, values, perspective=true) {
+    if (!threeDFrameActive) return false;
+    const texture=assetHandle(handle);
+    if (!texture.asset || !texture.width || !texture.height) throw new Error('expected texture');
+    if (!Array.isArray(values) || values.length%15!==0 || values.length>256*15) {
+      throw new Error('texture batch needs at most 256 XYZUV triangles');
+    }
+    values=values.map(Number);
+    if (!values.every((n,i)=>Number.isFinite(n) && (i%5<3?Math.abs(n)<=32768:n>=0&&n<=1))) {
+      throw new Error('XYZ must be finite within +/-32768; UV within 0..1');
+    }
+    for (let face=0;face<values.length;face+=15) {
+      let vertices=[];
+      for (let i=0;i<3;i++) {
+        const n=face+i*5;
+        vertices.push({...threeDTransformVertex(values[n],values[n+1],values[n+2]),u:values[n+3],v:values[n+4]});
+      }
+      vertices=threeDClipUV(vertices,threeDCamera.nearClip,true);
+      vertices=threeDClipUV(vertices,threeDCamera.farClip,false);
+      for (let i=1;i+1<vertices.length;i++) threeDRasterUV(texture,[vertices[0],vertices[i],vertices[i+1]],perspective);
+    }
+    return true;
+  }
+
   function draw3DTriangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, color) {
     if (!threeDFrameActive) throw new Error('3D frame not begun');
     const values = [x1, y1, z1, x2, y2, z2, x3, y3, z3, color]
@@ -4540,6 +4631,7 @@
     set3DViewport: set3DViewport,
     set3DResolution: set3DResolution,
     set3DCamera: set3DCamera,
+    draw3DTexturedTriangles: draw3DTexturedTriangles,
     draw3DTriangle: draw3DTriangle,
     draw3DTriangles: draw3DTriangles,
     draw3DIndexedMesh: draw3DIndexedMesh,

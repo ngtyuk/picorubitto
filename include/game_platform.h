@@ -81,6 +81,12 @@ bool game_display_present(void);
 bool game_display_boot(void);
 void game_display_error(const char *title, const char *detail);
 
+typedef struct game_texture game_texture_t;
+
+/* Experimental XYZUV batch, at most 256 triangles; normalized clamped UV. */
+bool game_3d_draw_textured_triangles(const game_texture_t *texture,
+                                   const float *values, size_t triangles,
+                                   bool perspective);
 bool game_3d_supported(void);
 bool game_3d_begin_frame(void);
 bool game_3d_set_viewport(int x, int y, int width, int height);
@@ -114,7 +120,6 @@ uint16_t game_sprite_frame_width(const game_sprite_t *sprite);
 uint16_t game_sprite_frame_height(const game_sprite_t *sprite);
 uint16_t game_sprite_frame_count(const game_sprite_t *sprite);
 
-typedef struct game_texture game_texture_t;
 void game_texture_release(game_texture_t *texture);
 game_texture_t *game_texture_load(const char *path, uint16_t width,
                                   uint16_t height, uint16_t key_color);

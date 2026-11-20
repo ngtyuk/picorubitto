@@ -253,6 +253,30 @@ module Game
       nil
     end
 
+    def self.textures_supported?
+      true
+    end
+
+    # Experimental normalized XYZUV batch; unused by the flat renderer.
+    def self.draw_textured_triangles(texture, triangles, perspective = true)
+      raise TypeError, 'expected Game::Texture' unless texture.is_a?(Game::Texture)
+      unless triangles.is_a?(Array) && triangles.length % 15 == 0 && triangles.length <= 256 * 15
+        raise ArgumentError, 'texture batch needs at most 256 XYZUV triangles'
+      end
+      triangles.each_with_index do |value, index|
+        raise TypeError, 'XYZUV values must be numbers' unless value.is_a?(Numeric)
+        unless finite_number?(value) && (index % 5 < 3 ? value.abs <= 32768 : value >= 0 && value <= 1)
+          raise ArgumentError, 'XYZ must be finite within +/-32768; UV within 0..1'
+        end
+      end
+      result = JS.global[:GameEmulator].draw3DTexturedTriangles(
+        texture.instance_variable_get(:@handle).id, JS::Bridge.to_js(triangles.map { |value| js_number(value) }),
+        !!perspective
+      )
+      raise RuntimeError, '3D texture renderer unavailable or frame not begun' unless result
+      nil
+    end
+
     def self.draw_triangles(triangles)
       unless triangles.is_a?(Array) && triangles.length % 10 == 0
         raise ArgumentError, '3D triangle batch must contain 10-value records'
