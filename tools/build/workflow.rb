@@ -504,7 +504,7 @@ else
       ruby tools/build/workflow.rb engine [options]
       ruby tools/build/workflow.rb game GAME_DIR [options]
       ruby tools/build/workflow.rb studio [options]
-      ruby tools/build/workflow.rb checks [--compare-3d | --audio-only] [--output DIR] [--mrbc PATH]
+      ruby tools/build/workflow.rb checks [--compare-3d | --audio-only | --dvi-only] [--output DIR] [--mrbc PATH]
 
     Typical commands:
       ruby tools/build/workflow.rb engine
