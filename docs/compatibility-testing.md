@@ -134,7 +134,9 @@ ruby tools/build/workflow.rb checks
 USB CDCで8MiBのPSRAM検出、`CLOCK TEST: PASS`、TFTの初回転送、内蔵SDの
 `SCK=GP30 MISO=GP40 MOSI=GP31 CS=GP43` と `SD: mount result=0`、ROMの読み込みを順に確認します。
 統合ROMで全ボタン、描画、音声、SAVEを確認し、電源を入れ直して保存データを再度読み込みます。
-実機合格の条件とDVI・USB入力の後続検証は[対応ロードマップ](rp2350-pizero.md)を参照してください。
+mini HDMIでは[DVI検証用UF2とROM](rp2350-pizero.md#dvi検証用uf2とrom)を組み合わせ、
+映像の色・枠・1ピクセルパターン・動きを確認します。検証版は定格TFT版とはCPUクロックが
+異なるため、DVI版のUSBログでもPSRAM全域検査と内蔵SDの起動を確認してください。
 
 ### WeActクロック候補の評価
 

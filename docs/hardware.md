@@ -105,7 +105,8 @@ PSRAM部品の候補と実装前の照合項目は[対応ロードマップ](rp2
 UF2はBOOTを使って書き込み、起動ログはUSB（J4）側で読みます。I2Sを使う場合は
 ビルドコマンドに `--audio-output i2s`を追加します。PIO-USBはGP28/29、
 microSDのDAT2はGP42に配線されているため、I2SのDINはGP17、音量はゲーム側から制御します。
-mini HDMIのDVI出力とPIO-USBホスト入力は[ロードマップ](rp2350-pizero.md#対応ロードマップ)に
+mini HDMI出力を試す場合は[DVI検証用UF2とROM](rp2350-pizero.md#dvi検証用uf2とrom)を使用します。
+DVI検証版の操作は同じGPIOボタンです。PIO-USBホスト入力は[ロードマップ](rp2350-pizero.md#対応ロードマップ)に
 沿って評価します。ピン番号の出典は[Waveshare回路図](https://files.waveshare.com/wiki/RP2350-PiZero/RP2350-PiZero.pdf)です。
 
 ### Pimoroni Pico Plus 2の場合

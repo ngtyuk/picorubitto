@@ -16,9 +16,23 @@ else()
   set(_clock_diagnostics 0)
 endif()
 
-if(GAME_CLOCK_PROFILE STREQUAL "stock")
+if(GAME_DVI)
+  if(NOT PICO_BOARD STREQUAL "waveshare_rp2350_pizero" OR
+     NOT GAME_CLOCK_PROFILE STREQUAL "stock")
+    message(FATAL_ERROR "DVI requires Waveshare RP2350-PiZero and its dedicated clock profile")
+  endif()
+  # PicoDVI shifts one TMDS bit per sys_clk cycle for 25.2 MHz VGA timing.
+  set(_clock_profile_name pizero-dvi)
+  set(_clock_mhz 252)
+  set(_clock_vco 1512000000)
+  set(_clock_postdiv1 6)
+  set(_clock_postdiv2 1)
+  set(_clock_voltage VREG_VOLTAGE_1_20)
+  set(_clock_mv 1200)
+elseif(GAME_CLOCK_PROFILE STREQUAL "stock")
   add_compile_definitions(GAME_CLOCK_PROFILE_NAME="stock" GAME_CLOCK_CUSTOM=0
     GAME_CLOCK_DIAGNOSTICS=${_clock_diagnostics})
+  return()
 else()
   if(NOT PICO_BOARD STREQUAL "weact_studio_rp2350b_core")
     message(FATAL_ERROR "Clock profiles require WeAct RP2350B Core")
@@ -54,23 +68,24 @@ else()
   else()
     message(FATAL_ERROR "Unknown GAME_CLOCK_PROFILE: ${GAME_CLOCK_PROFILE}")
   endif()
-
-  math(EXPR _clock_hz "${_clock_mhz} * 1000000")
-  math(EXPR _flash_div "(${_clock_mhz} + 74) / 75")
-  add_compile_definitions(
-    GAME_CLOCK_PROFILE_NAME="${GAME_CLOCK_PROFILE}"
-    GAME_CLOCK_CUSTOM=1
-    GAME_CLOCK_DIAGNOSTICS=${_clock_diagnostics}
-    GAME_CLOCK_MIN_MV=${_clock_mv}
-    SYS_CLK_HZ=${_clock_hz}
-    PLL_SYS_REFDIV=1
-    PLL_SYS_VCO_FREQ_HZ=${_clock_vco}
-    PLL_SYS_POSTDIV1=${_clock_postdiv1}
-    PLL_SYS_POSTDIV2=${_clock_postdiv2}
-    SYS_CLK_VREG_VOLTAGE_AUTO_ADJUST=1
-    SYS_CLK_VREG_VOLTAGE_MIN=${_clock_voltage}
-    PICO_FLASH_SPI_CLKDIV=${_flash_div}
-    PICO_FLASH_SPI_RXDELAY=${_flash_div}
-    PICO_DEFAULT_PSRAM_MAX_FREQ=75000000
-  )
+  set(_clock_profile_name "${GAME_CLOCK_PROFILE}")
 endif()
+
+math(EXPR _clock_hz "${_clock_mhz} * 1000000")
+math(EXPR _flash_div "(${_clock_mhz} + 74) / 75")
+add_compile_definitions(
+  GAME_CLOCK_PROFILE_NAME="${_clock_profile_name}"
+  GAME_CLOCK_CUSTOM=1
+  GAME_CLOCK_DIAGNOSTICS=${_clock_diagnostics}
+  GAME_CLOCK_MIN_MV=${_clock_mv}
+  SYS_CLK_HZ=${_clock_hz}
+  PLL_SYS_REFDIV=1
+  PLL_SYS_VCO_FREQ_HZ=${_clock_vco}
+  PLL_SYS_POSTDIV1=${_clock_postdiv1}
+  PLL_SYS_POSTDIV2=${_clock_postdiv2}
+  SYS_CLK_VREG_VOLTAGE_AUTO_ADJUST=1
+  SYS_CLK_VREG_VOLTAGE_MIN=${_clock_voltage}
+  PICO_FLASH_SPI_CLKDIV=${_flash_div}
+  PICO_FLASH_SPI_RXDELAY=${_flash_div}
+  PICO_DEFAULT_PSRAM_MAX_FREQ=75000000
+)

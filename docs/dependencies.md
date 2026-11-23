@@ -7,6 +7,7 @@
 | [PicoRuby](https://github.com/picoruby/picoruby/releases/tag/4.0.5) | 4.0.5 | `604666ec366bd9c597756e3d671bfa4c378f165d` |
 | [Funicular](https://github.com/picoruby/funicular/tree/fe7f88700a201e80269a3e54221770b9ca0025f4) | 0.5.2（PicoRubyのsubmodule） | `fe7f88700a201e80269a3e54221770b9ca0025f4` |
 | [Pico SDK](https://github.com/raspberrypi/pico-sdk/releases/tag/2.3.1) | 2.3.1 | `079c6f39023649b154152db30f1d781e884879bc` |
+| [PicoDVI](https://github.com/Wren6991/PicoDVI) | RP2350 PIOドライバ（PiZero DVI版のみリンク、BSD 3-Clause） | `dccd738bfa9af75badcb32acde3e41bd6a3fa30a` |
 | [SD用FatFsポート](https://github.com/picoruby/picoruby/tree/2eb44257faa86980ee12f40e77573779310433b9/mrbgems/picoruby-filesystem-fat) | R0.14b、削除前の最終版 | `2eb44257faa86980ee12f40e77573779310433b9` |
 | [Prism](https://github.com/PrismJS/prism/releases/tag/v1.30.0) | 1.30.0、MITライセンスを含め同梱 | `studio/vendor/prism/` |
 

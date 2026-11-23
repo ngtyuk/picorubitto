@@ -44,6 +44,7 @@ WeActでI2SのDINをGP28、音量ダイヤルをGP42、出力上限を50%にす�
 | メソッド検索キャッシュ | `--method-cache 0\|64\|128\|256\|512\|1024`。Releaseの既定は256、Debugは0（無効）、実機専用 |
 | VM管理データの配置比較 | `--vm-state psram\|sram`。既定はpsram、sramは実機専用の比較設定 |
 | ビルド対象 | `--firmware-only`、`--wasm-only`、`--no-emulator-runtime` |
+| 映像出力 | `--display-output tft`（既定）または `--display-output dvi`（PiZero検証用） |
 | パス | `--picoruby-root`、`--build-root`、`--firmware-dir`、`--arm-toolchain` |
 | 調査 | `--debug`、`--profiling` |
 | WeActクロック | `--clock-profile stock\|weact-150\|weact-200\|weact-250\|weact-300`。既定はstock（150MHz） |

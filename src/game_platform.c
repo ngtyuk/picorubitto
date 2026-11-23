@@ -6,6 +6,9 @@
 #include "game_kana_font.h"
 #include "game_kanji_font.h"
 #include "game_ascii_font.h"
+#if GAME_DVI
+#include "game_dvi.h"
+#endif
 
 #include <limits.h>
 #include <math.h>
@@ -334,7 +337,7 @@ static uint16_t game_3d_depth_low_storage[GAME_3D_DEPTH_SRAM_PIXELS]
   __attribute__((aligned(4)));
 static uint16_t *game_3d_depth_psram;
 #endif
-#if !GAME_TFT_CORE1
+#if !GAME_TFT_CORE1 && !GAME_DVI
 static uint16_t game_3d_depth_storage[GAME_DISPLAY_WIDTH * GAME_DISPLAY_HEIGHT]
   __attribute__((aligned(4)));
 #endif
@@ -458,15 +461,17 @@ _Static_assert(sizeof(audio_dma_buffers[0]) == 2048, "I2S read ring must match o
 
 static bool platform_ready;
 static const char *platform_boot_error = "BOOT";
-static bool tft_ready;
+static bool tft_ready; /* The selected display backend is ready. */
 static bool sd_ready;
 static FATFS sd_fs;
+#if !GAME_DVI
 static int tft_dma_channel = -1;
 #if GAME_ENABLE_DIRTY_RECT || (!GAME_FRAMEBUFFER_IN_SRAM && !GAME_TFT_DMA_FROM_PSRAM)
 #if GAME_TFT_PIPELINE
 static uint8_t tft_stripe[2][TFT_STRIPE_BYTES] __attribute__((aligned(4)));
 #else
 static uint8_t tft_stripe[TFT_STRIPE_BYTES] __attribute__((aligned(4)));
+#endif
 #endif
 #endif
 static repeating_timer_t sd_timer;
@@ -1338,6 +1343,7 @@ sd_timer_callback(repeating_timer_t *timer)
   return true;
 }
 
+#if !GAME_DVI
 static void
 tft_select(void)
 {
@@ -1465,6 +1471,7 @@ tft_init(void)
   tft_ready = true;
   printf("TFT: ready, DMA channel=%d\n", tft_dma_channel);
 }
+#endif
 
 static uint32_t input_poll_state(void);
 
@@ -1835,10 +1842,10 @@ game_platform_boot(void)
   }
 #endif
 
-#if GAME_TFT_CORE1
+#if GAME_TFT_CORE1 || GAME_DVI
   game_3d_depth_buffer = (uint16_t *)media_alloc(GAME_3D_DEPTH_BUFFER_BYTES,
                                                  4u);
-#if GAME_3D_DEPTH_SRAM
+#if GAME_TFT_CORE1 && GAME_3D_DEPTH_SRAM
   game_3d_depth_psram = game_3d_depth_buffer;
   printf("3D: low depth SRAM reserved bytes=%u\n",
          (unsigned)sizeof(game_3d_depth_low_storage));
@@ -1879,13 +1886,21 @@ game_platform_boot(void)
 
   input_init();
   printf("INPUT: GP2..GP7, GP9, GP12, GP14, GP16 pull-ups enabled\n");
+#if GAME_DVI
+  tft_ready = game_dvi_init();
+#else
   tft_init();
+#endif
   if (!game_display_boot()) {
-    printf("TFT: initial frame transfer failed\n");
+    printf("DISPLAY: initial frame transfer failed\n");
     return false;
   }
   splash_started = time_us_32();
+#if GAME_DVI
+  printf("DVI: initial frame submitted\n");
+#else
   printf("TFT: initial frame transferred\n");
+#endif
 
   audio_init();
   audio_boot_chime();
@@ -4503,7 +4518,7 @@ game_display_draw_texture(const game_texture_t *texture, int x, int y,
   return true;
 }
 
-#if GAME_ENABLE_DIRTY_RECT
+#if GAME_ENABLE_DIRTY_RECT && !GAME_DVI
 static void
 tft_transfer_pixels(const uint8_t *data, size_t bytes)
 {
@@ -5054,7 +5069,12 @@ game_display_present(void)
 #endif
   }
 #endif
-#if GAME_TFT_CORE1
+#if GAME_DVI
+  if (!game_dvi_present(framebuffer)) return false;
+#if GAME_ENABLE_PROFILING
+  profile_dirty_bytes = GAME_FRAMEBUFFER_BYTES;
+#endif
+#elif GAME_TFT_CORE1
   if (!tft_core1_submit_frame()) {
     for (size_t index = 0; index < dirty_rect_count; index++) {
       tft_transfer_dirty_rect(&dirty_rects[index]);
@@ -6574,7 +6594,7 @@ game_display_boot(void)
   game_display_fill_rect(20, 20, 280, 200, GAME_SYSTEM_RUBY, 255);
   draw_boot_title();
   if (!game_display_present()) return false;
-  /* Leave the splash on the panel but start both game buffers black. A game
+  /* Leave the splash on screen but start the drawing buffers black. A game
    * may draw only part of its first frame without explicitly clearing it. */
 #if GAME_TFT_CORE1
   if (tft_core1_started) {
