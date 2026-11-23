@@ -7,7 +7,7 @@ class ClockProfileTest < Minitest::Test
   ROOT = File.expand_path('../..', __dir__)
   PIZERO = 'waveshare_rp2350_pizero'
 
-  def configure(profile, board = 'weact_studio_rp2350b_core', diagnostics: false)
+  def configure(profile, board = 'weact_studio_rp2350b_core', diagnostics: false, dvi: false)
     Dir.mktmpdir('gaming-clock-') do |dir|
       FileUtils.mkdir_p(File.join(dir, 'sdk-child'))
       File.write(File.join(dir, 'sdk-child/CMakeLists.txt'), <<~CMAKE)
@@ -22,7 +22,7 @@ class ClockProfileTest < Minitest::Test
       CMAKE
       output, status = Open3.capture2e('cmake', '-S', dir, '-B', File.join(dir, 'build'),
         "-DGAME_CLOCK_PROFILE=#{profile}", "-DPICO_BOARD=#{board}",
-        "-DGAME_CLOCK_DIAGNOSTICS=#{diagnostics ? 'ON' : 'OFF'}")
+        "-DGAME_CLOCK_DIAGNOSTICS=#{diagnostics ? 'ON' : 'OFF'}", "-DGAME_DVI=#{dvi ? 'ON' : 'OFF'}")
       definitions = status.success? ? File.read(File.join(dir, 'build/inherited.txt')).split(';') : []
       return [definitions, output, status]
     end
@@ -83,6 +83,24 @@ class ClockProfileTest < Minitest::Test
     assert_equal ['GAME_CLOCK_PROFILE_NAME="stock"', 'GAME_CLOCK_CUSTOM=0', 'GAME_CLOCK_DIAGNOSTICS=1'], definitions
   end
 
+  def test_pizero_dvi_sets_tmds_clock_and_keeps_external_memory_below_75mhz
+    definitions, output, status = configure('stock', PIZERO, diagnostics: true, dvi: true)
+    assert status.success?, output
+    settings = definitions.to_h { |item| item.split('=', 2) }
+    assert_equal '"pizero-dvi"', settings['GAME_CLOCK_PROFILE_NAME']
+    assert_equal '252000000', settings['SYS_CLK_HZ']
+    assert_equal 252_000_000, Integer(settings.fetch('PLL_SYS_VCO_FREQ_HZ')) /
+                             Integer(settings.fetch('PLL_SYS_POSTDIV1')) /
+                             Integer(settings.fetch('PLL_SYS_POSTDIV2'))
+    assert_equal '4', settings['PICO_FLASH_SPI_CLKDIV']
+    assert_equal '75000000', settings['PICO_DEFAULT_PSRAM_MAX_FREQ']
+    assert_equal 'VREG_VOLTAGE_1_20', settings['SYS_CLK_VREG_VOLTAGE_MIN']
+    assert_equal '1', settings['GAME_CLOCK_DIAGNOSTICS']
+    _, output, status = configure('stock', dvi: true)
+    refute status.success?
+    assert_includes output, 'DVI requires Waveshare RP2350-PiZero'
+  end
+
   def test_cli_rejects_profile_without_weact_firmware
     [%w[--clock-profile weact-300],
      %w[--board weact_studio_rp2350b_core --clock-profile weact-200 --wasm-only]].each do |args|
@@ -104,7 +122,8 @@ class ClockProfileTest < Minitest::Test
       %w[--volume-knob] => 'GP42 is wired to the microSD slot',
       %w[--audio-output i2s --i2s-data 28] => 'PiZero I2S requires BCLK=26, WS=27, DATA=17',
       %w[--audio-output i2s --i2s-bclk 27] => 'PiZero I2S requires BCLK=26, WS=27, DATA=17',
-      %w[--clock-diagnostics --wasm-only] => 'requires an RP2350 firmware build'
+      %w[--clock-diagnostics --wasm-only] => 'requires an RP2350 firmware build',
+      %w[--display-output dvi --wasm-only] => 'dvi requires a PiZero firmware build'
     }.each do |args, message|
       output, status = Open3.capture2e('ruby', File.join(ROOT, 'tools/build/workflow.rb'),
         'engine', '--board', PIZERO, *args)

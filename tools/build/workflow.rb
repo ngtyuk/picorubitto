@@ -81,6 +81,7 @@ def engine_workflow(argv)
     vm_state: 'psram',
     clock_profile: 'stock',
     clock_diagnostics: false,
+    display_output: 'tft',
     audio_output: 'pwm',
     audio_max_gain: 100,
     i2s_bclk: 26,
@@ -129,6 +130,9 @@ def engine_workflow(argv)
     opts.on('--clock-diagnostics', 'check the full scratch PSRAM before boot (PiZero or a WeAct clock profile)') do
       options[:clock_diagnostics] = true
     end
+    opts.on('--display-output OUTPUT', %w[tft dvi], 'display transport (DVI requires PiZero; default: tft)') do |value|
+      options[:display_output] = value
+    end
     opts.on('--tft-clock MHZ', Integer, 'set TFT SPI clock in MHz') { |value| options[:tft_clock_mhz] = value }
     opts.on('--tft-stripe-rows ROWS', Integer, 'set the SRAM TFT transfer stripe height') do |value|
       options[:tft_stripe_rows] = value
@@ -160,6 +164,9 @@ def engine_workflow(argv)
     fail_with('--clock-profile requires an RP2350 firmware build') unless options[:firmware]
   end
   pizero = options[:board] == PIZERO_BOARD
+  if options[:display_output] == 'dvi' && !(pizero && options[:firmware])
+    fail_with('--display-output dvi requires a PiZero firmware build')
+  end
   if options[:clock_diagnostics]
     fail_with('--clock-diagnostics requires an RP2350 firmware build') unless options[:firmware]
     if options[:clock_profile] == 'stock' && !pizero
@@ -226,6 +233,7 @@ def engine_workflow(argv)
       default: PicoRubyGaming::VMProfile.method_cache_default_for(debug: vm_debug))
     firmware_suffix += '-vm-state-sram' if options[:vm_state] == 'sram'
     firmware_suffix += "-#{options[:clock_profile]}" unless options[:clock_profile] == 'stock'
+    firmware_suffix += '-dvi' if options[:display_output] == 'dvi'
     firmware_suffix += '-clock-check' if options[:clock_diagnostics]
     firmware_suffix += '-audio-i2s' if options[:audio_output] == 'i2s'
     firmware_suffix += '-battery-warning' if options[:battery_warning]
@@ -303,6 +311,7 @@ def engine_workflow(argv)
       "-DGAME_VM_STATE_REGION=#{options[:vm_state]}",
       "-DGAME_CLOCK_PROFILE=#{options[:clock_profile]}",
       "-DGAME_CLOCK_DIAGNOSTICS=#{options[:clock_diagnostics] ? 'ON' : 'OFF'}",
+      "-DGAME_DVI=#{options[:display_output] == 'dvi' ? 'ON' : 'OFF'}",
       "-DGAME_BATTERY_WARNING=#{options[:battery_warning] ? 'ON' : 'OFF'}",
       "-DGAME_AUDIO_VOLUME_KNOB=#{options[:volume_knob] ? 'ON' : 'OFF'}",
       "-DGAME_AUDIO_MAX_GAIN=#{options[:audio_max_gain]}",
@@ -340,7 +349,7 @@ def engine_workflow(argv)
   puts "VM core: #{options[:vm_opt]} (#{options[:vm_opt] == 'speed' ? '-O2' : '-Os'})" if options[:firmware]
   puts "Method cache: #{options[:method_cache]} entries" if options[:firmware]
   puts "VM state: #{options[:vm_state]}" if options[:firmware]
-  puts "Clock profile: #{options[:clock_profile]}" if options[:firmware]
+  puts "Clock profile: #{options[:display_output] == 'dvi' ? 'pizero-dvi' : options[:clock_profile]}" if options[:firmware]
   puts "Clock diagnostics: #{options[:clock_diagnostics] ? 'on' : 'off'}" if options[:firmware]
   puts "Firmware: #{File.join(firmware_dir, 'pico_ruby_gaming.uf2')}" if options[:firmware]
   puts "WASM runtime: #{File.join(ROOT, 'emulator', 'picoruby')}" if options[:wasm] && options[:emulator]
@@ -504,7 +513,7 @@ else
       ruby tools/build/workflow.rb engine [options]
       ruby tools/build/workflow.rb game GAME_DIR [options]
       ruby tools/build/workflow.rb studio [options]
-      ruby tools/build/workflow.rb checks [--compare-3d | --audio-only] [--output DIR] [--mrbc PATH]
+      ruby tools/build/workflow.rb checks [--compare-3d | --audio-only | --dvi-only] [--output DIR] [--mrbc PATH]
 
     Typical commands:
       ruby tools/build/workflow.rb engine

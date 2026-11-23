@@ -213,4 +213,26 @@ class ChecksTest < Minitest::Test
       assert_equal binary, File.binread(File.join(output, 'game.mrb'))
     end
   end
+
+  def test_dvi_builder_compiles_a_standalone_cartridge
+    root = File.expand_path('../..', __dir__)
+    compiler = ENV.fetch('CHECKS_MRBC', PicoRubyGaming::VMProfile.host_compiler(File.join(root, 'build')))
+    skip 'Build the matching host mrbc first' unless File.file?(compiler)
+    Dir.mktmpdir('gaming-dvi-') do |output|
+      command = ['ruby', File.join(root, 'tools/build/build_checks.rb'),
+                 '--dvi-only', '--output', output, '--mrbc', compiler]
+      log, status = Open3.capture2e(*command)
+      assert status.success?, log
+      assert_equal %w[game.mrb main.rb], Dir.children(output).sort
+      binary = File.binread(File.join(output, 'game.mrb'))
+      assert_equal 'RITE0400', binary[0, 8]
+      assert_equal binary.bytesize, binary[8, 4].unpack1('N')
+      assert_equal File.read(File.join(root, 'tests/portable/hardware_dvi.rb')),
+                   File.read(File.join(output, 'main.rb'))
+      log, status = Open3.capture2e(*command, '--audio-only')
+      refute status.success?
+      assert_includes log, 'mutually exclusive'
+      assert_equal binary, File.binread(File.join(output, 'game.mrb'))
+    end
+  end
 end

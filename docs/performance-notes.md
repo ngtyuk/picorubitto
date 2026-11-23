@@ -26,6 +26,15 @@ APIの引数と上限は[APIリファレンス](api-reference.md)、メモリと
 パネルや配線で表示が不安定な場合は`--tft-clock 40`などで下げて確認します。
 `Game.tick(60)`の60は目標FPSです。実測FPSは統合ROMかprofilingログで確認します。
 
+## PiZero DVI検証版の表示コスト
+
+PiZeroのDVI検証版は252MHzで、FlashとPSRAMは63MHz、周辺クロックは126MHzです。
+Core 1が映像を常時エンコードし、Core 0は `present` ごとに150KiBをPSRAMの描画面から
+SRAMの空き走査面へコピーします。走査2面に300KiB、TMDS走査線5本に約19KiBを使います。
+画面更新の間隔がDVIのフレーム周期より短いと、書き換え可能な面が空くまで待ちます。
+3D深度バッファもPSRAMへ置きます。DVIの表示が安定する条件と実フレームレートは
+[PiZeroの検証手順](rp2350-pizero.md#dvi検証用uf2とrom)で計測します。
+
 ## WeActの段階的オーバークロック検証
 
 `engine --clock-profile`はWeAct RP2350B Core専用の設定です。既定の`stock`は

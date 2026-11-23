@@ -5,6 +5,7 @@ set(PICO_BOARD pimoroni_pico_plus2_rp2350 CACHE STRING
 set(PICO_SDK_PATH "${CMAKE_CURRENT_LIST_DIR}/deps/pico-sdk" CACHE PATH "Pico SDK path")
 set(PICORUBY_ROOT "" CACHE PATH "PicoRuby checkout")
 set(PICORUBY_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/../mruby/pico-gaming" CACHE PATH "PicoRuby cross-build directory")
+option(GAME_DVI "Use the RP2350-PiZero mini HDMI port for DVI video" OFF)
 unset(GAME_TFT_DMA_FROM_PSRAM CACHE)
 set(GAME_TFT_DMA_FROM_PSRAM OFF)
 unset(GAME_TFT_PIPELINE CACHE)
@@ -19,6 +20,11 @@ if(NOT GAME_VM_STATE_REGION MATCHES "^(psram|sram)$")
 endif()
 unset(GAME_FRAMEBUFFER_IN_SRAM CACHE)
 set(GAME_FRAMEBUFFER_IN_SRAM ON)
+if(GAME_DVI)
+  # DVI uses Core 1 and has its own pair of SRAM scanout buffers.
+  set(GAME_TFT_CORE1 OFF)
+  set(GAME_FRAMEBUFFER_IN_SRAM OFF)
+endif()
 unset(GAME_ENABLE_DIRTY_RECT CACHE)
 set(GAME_ENABLE_DIRTY_RECT ON)
 unset(GAME_ENABLE_FRAME_DIFF CACHE)
@@ -174,6 +180,7 @@ if(GAME_OPTIMIZE_FOR_SPEED)
 endif()
 
 target_compile_definitions(pico_ruby_gaming PRIVATE
+  GAME_DVI=$<BOOL:${GAME_DVI}>
   GAME_BATTERY_WARNING=$<BOOL:${GAME_BATTERY_WARNING}>
   GAME_AUDIO_VOLUME_KNOB=$<BOOL:${GAME_AUDIO_VOLUME_KNOB}>
   GAME_AUDIO_MAX_GAIN=${GAME_AUDIO_MAX_GAIN}
@@ -316,6 +323,12 @@ if(GAME_AUDIO_I2S)
   target_link_libraries(pico_ruby_gaming PRIVATE hardware_pio)
 endif()
 
+if(GAME_DVI)
+  include(cmake/picodvi.cmake)
+  target_sources(pico_ruby_gaming PRIVATE src/game_dvi.c)
+  target_link_libraries(pico_ruby_gaming PRIVATE game_picodvi pico_multicore)
+endif()
+
 target_link_libraries(pico_ruby_gaming PRIVATE
   pico_stdlib
   pico_rand
@@ -362,6 +375,11 @@ pico_set_linker_script_var(pico_ruby_gaming RAM_LENGTH 0x7c000)
 pico_set_linker_script_var(pico_ruby_gaming SCRATCH_Y_ORIGIN 0x2007c000)
 pico_set_linker_script_var(pico_ruby_gaming SCRATCH_Y_LENGTH 0x4000)
 set(GAME_C_HEAP_MIN 0x0400)
+set(GAME_CORE1_STACK_SIZE 0x1000)
+if(GAME_DVI)
+  # PicoDVI's inner TMDS loop shares scratch X with the Core 1 stack.
+  set(GAME_CORE1_STACK_SIZE 0x0f00)
+endif()
 if(GAME_VM_STATE_REGION STREQUAL "sram")
   # Keep a minimum C heap after the new static reservation; the linker rejects
   # configurations that would consume this or the separate core stacks.
@@ -369,6 +387,6 @@ if(GAME_VM_STATE_REGION STREQUAL "sram")
 endif()
 target_compile_definitions(pico_ruby_gaming PRIVATE
   PICO_STACK_SIZE=0x4000
-  PICO_CORE1_STACK_SIZE=0x1000
+  PICO_CORE1_STACK_SIZE=${GAME_CORE1_STACK_SIZE}
   PICO_HEAP_SIZE=${GAME_C_HEAP_MIN}
 )

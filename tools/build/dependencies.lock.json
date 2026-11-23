@@ -28,6 +28,13 @@
     "revision": "079c6f39023649b154152db30f1d781e884879bc",
     "submodules": ["lib/tinyusb"]
   },
+  "picodvi": {
+    "version": "RP2350 PIO driver",
+    "url": "https://github.com/Wren6991/PicoDVI.git",
+    "path": "deps/picodvi",
+    "revision": "dccd738bfa9af75badcb32acde3e41bd6a3fa30a",
+    "sparse": ["software/libdvi"]
+  },
   "fatfs": {
     "version": "R0.14b (PicoRuby final SD port)",
     "url": "https://github.com/picoruby/picoruby.git",

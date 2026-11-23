@@ -58,7 +58,7 @@ main(void)
          (unsigned)PICO_STACK_SIZE, (unsigned)PICO_CORE1_STACK_SIZE);
 
   if (!game_platform_boot()) {
-    fatal_error(game_platform_boot_error(), "PSRAM, TFT, or SD initialization failed");
+    fatal_error(game_platform_boot_error(), "PSRAM, display, or SD initialization failed");
   }
 
   if (!game_storage_load_rom(&rom, &rom_size)) {
